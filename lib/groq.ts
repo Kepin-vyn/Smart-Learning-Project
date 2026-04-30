@@ -152,7 +152,7 @@ export async function extractTextFromImage(
   const groq = getClient()
 
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.2-11b-vision-preview',
+    model: 'llama-3.2-90b-vision-preview',
     messages: [
       {
         role: 'user',
