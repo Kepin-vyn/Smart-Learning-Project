@@ -10,7 +10,58 @@ export default function StepsPage() {
   
   // Hydration fix for Zustand with Next.js
   const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  const [isTtsSupported, setIsTtsSupported] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  useEffect(() => { 
+    setMounted(true)
+    if (typeof window !== 'undefined' && !window.speechSynthesis) {
+      setIsTtsSupported(false)
+    }
+  }, [])
+
+  // Stop TTS when component unmounts or step changes
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [currentStepIndex])
+
+  const handleTTS = (text: string) => {
+    if (!window.speechSynthesis) return
+
+    if (isPlaying) {
+      window.speechSynthesis.cancel()
+      setIsPlaying(false)
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    
+    // Set language based on AI detected language
+    const lang = result?.language === 'en' ? 'en-US' : 'id-ID'
+    utterance.lang = lang
+    
+    // Make voice slightly slower and higher pitch for easier listening (ADHD/Dyslexia friendly)
+    utterance.rate = 0.9
+    utterance.pitch = 1.05
+
+    utterance.onend = () => setIsPlaying(false)
+    utterance.onerror = () => setIsPlaying(false)
+
+    window.speechSynthesis.speak(utterance)
+    setIsPlaying(true)
+  }
+
+  const navigateStep = (newIndex: number) => {
+    if (isPlaying && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+      setIsPlaying(false)
+    }
+    setCurrentStep(newIndex)
+  }
 
   if (!mounted) return <div className="min-h-screen bg-[#EFF3F7]" />
 
@@ -79,14 +130,25 @@ export default function StepsPage() {
               {step.stepNumber}
             </div>
             
-            {/* Tombol TTS Placeholder */}
-            <button 
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#3B6B7C] bg-[#F7FAFB] border border-[#CCDAE4] rounded-lg hover:bg-[#E8F2F6] transition-colors"
-              aria-label="Dengarkan teks"
-            >
-              <span className="text-lg">🔊</span>
-              Dengarkan
-            </button>
+            {/* Tombol TTS */}
+            {isTtsSupported ? (
+              <button 
+                onClick={() => handleTTS(`${step.title}. ${step.content}`)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-lg transition-colors ${
+                  isPlaying 
+                    ? 'text-white bg-[#C47E2A] border-[#C47E2A] shadow-inner' 
+                    : 'text-[#3B6B7C] bg-[#F7FAFB] border-[#CCDAE4] hover:bg-[#E8F2F6]'
+                }`}
+                aria-label={isPlaying ? "Hentikan suara" : "Dengarkan teks"}
+              >
+                <span className="text-lg">{isPlaying ? '⏹️' : '🔊'}</span>
+                {isPlaying ? 'Berhenti' : 'Dengarkan'}
+              </button>
+            ) : (
+              <span className="text-xs text-[#8DA4B4] italic bg-[#F7FAFB] px-3 py-1.5 rounded-md border border-[#E8F2F6]">
+                TTS tidak didukung browser ini
+              </span>
+            )}
           </div>
           
           <h2 className="text-2xl font-bold text-[#1C2B3A] mb-4 leading-tight">
@@ -101,7 +163,7 @@ export default function StepsPage() {
         {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-6 shrink-0 gap-4">
           <button
-            onClick={() => setCurrentStep(currentStepIndex - 1)}
+            onClick={() => navigateStep(currentStepIndex - 1)}
             disabled={isFirstStep}
             className="px-6 py-3.5 rounded-xl font-medium transition-all min-w-[140px]"
             style={{ 
@@ -117,9 +179,10 @@ export default function StepsPage() {
           <button
             onClick={() => {
               if (isLastStep) {
+                if (isPlaying && window.speechSynthesis) window.speechSynthesis.cancel()
                 router.push('/quiz')
               } else {
-                setCurrentStep(currentStepIndex + 1)
+                navigateStep(currentStepIndex + 1)
               }
             }}
             className="px-8 py-3.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm min-w-[140px]"
