@@ -74,3 +74,44 @@ ${text}`
     language: parsed.language ?? 'id',
   }
 }
+
+export async function generateQuizFromSteps(steps: MicroStep[], language: string): Promise<QuizResult> {
+  const genAI = getClient()
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+
+  const contentSummary = steps.map(s => `[${s.title}]: ${s.content}`).join('\n')
+  const isEn = language === 'en'
+
+  const prompt = `Kamu adalah asisten pembelajaran. Berdasarkan ringkasan materi berikut, buatlah 3 hingga 5 soal pilihan ganda.
+  
+ATURAN WAJIB:
+1. Soal HARUS sepenuhnya berasal dari teks materi yang diberikan di bawah ini. Jangan gunakan pengetahuan dari luar.
+2. Setiap soal memiliki 4 pilihan jawaban (satu benar, tiga pengecoh yang logis).
+3. Berikan 'hint' (petunjuk) untuk membantu jika user salah menjawab.
+4. Berikan 'explanation' (penjelasan) mengapa jawaban tersebut benar.
+5. Gunakan bahasa ${isEn ? 'Inggris' : 'Indonesia'}.
+6. Kembalikan HANYA JSON valid.
+
+Format JSON:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Pertanyaan?",
+      "options": ["Opsi A", "Opsi B", "Opsi C", "Opsi D"],
+      "correctIndex": 0, // index dari jawaban benar (0-3)
+      "hint": "Petunjuk jika salah",
+      "explanation": "Penjelasan mengapa opsi ini benar."
+    }
+  ]
+}
+
+Materi:
+${contentSummary}`
+
+  const result = await model.generateContent(prompt)
+  const raw = result.response.text().trim()
+  const jsonStr = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim()
+
+  return JSON.parse(jsonStr) as QuizResult
+}

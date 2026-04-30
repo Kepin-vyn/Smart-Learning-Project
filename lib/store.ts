@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ProcessResult, MicroStep } from './types'
+import type { ProcessResult, MicroStep, QuizResult } from './types'
 
 interface LearningState {
   // Data materi yang sedang dipelajari
   result: ProcessResult | null
+  quizResult: QuizResult | null
   
   // Progress belajar
   currentStepIndex: number
@@ -12,6 +13,7 @@ interface LearningState {
   
   // Actions
   setResult: (result: ProcessResult) => void
+  setQuizResult: (quizResult: QuizResult) => void
   setCurrentStep: (index: number) => void
   markStepCompleted: (stepId: string) => void
   resetSession: () => void
@@ -21,14 +23,18 @@ export const useLearningStore = create<LearningState>()(
   persist(
     (set) => ({
       result: null,
+      quizResult: null,
       currentStepIndex: 0,
       completedSteps: [],
       
       setResult: (result) => set({ 
         result, 
+        quizResult: null, // Reset quiz when new material is loaded
         currentStepIndex: 0, 
         completedSteps: [] 
       }),
+
+      setQuizResult: (quizResult) => set({ quizResult }),
       
       setCurrentStep: (index) => set({ currentStepIndex: index }),
       
@@ -40,6 +46,7 @@ export const useLearningStore = create<LearningState>()(
       
       resetSession: () => set({
         result: null,
+        quizResult: null,
         currentStepIndex: 0,
         completedSteps: []
       })
