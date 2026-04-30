@@ -8,7 +8,6 @@ export default function StepsPage() {
   const router = useRouter()
   const { result, currentStepIndex, setCurrentStep } = useLearningStore()
   
-  // Hydration fix for Zustand with Next.js
   const [mounted, setMounted] = useState(false)
   const [isTtsSupported, setIsTtsSupported] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -20,7 +19,6 @@ export default function StepsPage() {
     }
   }, [])
 
-  // Stop TTS when component unmounts or step changes
   useEffect(() => {
     return () => {
       if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -31,26 +29,17 @@ export default function StepsPage() {
 
   const handleTTS = (text: string) => {
     if (!window.speechSynthesis) return
-
     if (isPlaying) {
       window.speechSynthesis.cancel()
       setIsPlaying(false)
       return
     }
-
     const utterance = new SpeechSynthesisUtterance(text)
-    
-    // Set language based on AI detected language
-    const lang = result?.language === 'en' ? 'en-US' : 'id-ID'
-    utterance.lang = lang
-    
-    // Make voice slightly slower and higher pitch for easier listening (ADHD/Dyslexia friendly)
+    utterance.lang = result?.language === 'en' ? 'en-US' : 'id-ID'
     utterance.rate = 0.9
     utterance.pitch = 1.05
-
     utterance.onend = () => setIsPlaying(false)
     utterance.onerror = () => setIsPlaying(false)
-
     window.speechSynthesis.speak(utterance)
     setIsPlaying(true)
   }
@@ -63,22 +52,21 @@ export default function StepsPage() {
     setCurrentStep(newIndex)
   }
 
-  if (!mounted) return <div className="min-h-screen bg-[var(--color-bg)]" />
+  if (!mounted) return <div className="min-h-screen" style={{ background: 'var(--color-bg)' }} />
 
   if (!result || !result.steps || result.steps.length === 0) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--color-bg)' }}>
-        <div className="text-center bg-white p-10 rounded-2xl shadow-sm max-w-md w-full">
-          <div className="text-5xl mb-4">📭</div>
-          <h1 className="text-xl font-bold text-[var(--color-text)]">Belum Ada Materi</h1>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+        <div className="text-center p-12 rounded-[2rem] max-w-md w-full shadow-card"
+          style={{ background: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-border)' }}>
+          <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--color-primary-container)' }}>inbox</span>
+          <h1 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Belum Ada Materi</h1>
+          <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
             Kamu belum memasukkan materi apapun. Silakan kembali ke beranda untuk memproses materi baru.
           </p>
-          <button 
-            onClick={() => router.push('/')}
-            className="inline-block mt-6 px-6 py-3 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ background: 'var(--color-primary)' }}
-          >
+          <button onClick={() => router.push('/')}
+            className="px-6 py-3 rounded-full font-semibold text-sm transition-all squishy-btn"
+            style={{ background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}>
             ← Kembali ke Beranda
           </button>
         </div>
@@ -89,93 +77,111 @@ export default function StepsPage() {
   const step = result.steps[currentStepIndex]
   const isFirstStep = currentStepIndex === 0
   const isLastStep = currentStepIndex === result.steps.length - 1
+  const progress = ((currentStepIndex + 1) / result.steps.length) * 100
 
   return (
-    <main className="h-screen overflow-hidden flex flex-col" style={{ background: 'var(--color-bg)' }}>
-      {/* Header / Progress Bar */}
-      <header className="bg-white px-6 py-4 border-b border-[var(--color-border)] shadow-sm shrink-0">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
-          <button 
-            onClick={() => router.push('/')}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-2 -ml-2 rounded-lg hover:bg-[var(--color-surface-2)]"
-            aria-label="Keluar dari sesi belajar"
-          >
-            ✕ Keluar
-          </button>
-          
-          <div className="flex-1 max-w-md text-center">
-            <div className="text-xs font-semibold text-[var(--color-text-muted)] mb-2 tracking-wide">
-              LANGKAH {currentStepIndex + 1} DARI {result.steps.length}
-            </div>
-            <div className="h-2 w-full bg-[var(--color-primary-light)] rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-out rounded-full"
-                style={{ width: `${((currentStepIndex + 1) / result.steps.length) * 100}%` }}
-              />
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col items-center" style={{ background: 'var(--color-bg)' }}>
 
-          <div className="w-16" /> {/* Spacer untuk balance */}
+      {/* Decorative blobs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[5%] w-[35%] h-[35%] rounded-full blur-[100px]"
+          style={{ background: 'rgba(206,233,214,0.3)' }} />
+        <div className="absolute bottom-[5%] right-[5%] w-[25%] h-[25%] rounded-full blur-[100px]"
+          style={{ background: 'rgba(165,199,226,0.2)' }} />
+      </div>
+
+      {/* Pomodoro widget — floating top right */}
+      <div className="absolute right-6 top-24 z-10 hidden md:block">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 anim-pulse-gentle"
+            style={{ background: 'rgba(143,169,152,0.15)', borderColor: 'var(--color-primary-container)' }}>
+            <span className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>25:00</span>
+          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>FOKUS</span>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <section className="flex-1 w-full max-w-2xl mx-auto px-6 py-8 flex flex-col justify-center relative">
-        <div 
-          key={step.id} 
-          className="bg-white rounded-2xl p-8 md:p-10 shadow-[0_4px_32px_rgba(76,100,85,)] anim-fade-up max-h-full overflow-y-auto"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold text-lg">
-              {step.stepNumber}
-            </div>
-            
-            {/* Tombol TTS */}
-            {isTtsSupported ? (
-              <button 
-                onClick={() => handleTTS(`${step.title}. ${step.content}`)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-lg transition-colors ${
-                  isPlaying 
-                    ? 'text-white bg-[var(--color-amber)] border-[var(--color-amber)] shadow-inner' 
-                    : 'text-[var(--color-primary)] bg-[var(--color-surface-2)] border-[var(--color-border)] hover:bg-[var(--color-primary-light)]'
-                }`}
-                aria-label={isPlaying ? "Hentikan suara" : "Dengarkan teks"}
-              >
-                <span className="text-lg">{isPlaying ? '⏹️' : '🔊'}</span>
-                {isPlaying ? 'Berhenti' : 'Dengarkan'}
-              </button>
-            ) : (
-              <span className="text-xs text-[var(--color-text-subtle)] italic bg-[var(--color-surface-2)] px-3 py-1.5 rounded-md border border-[var(--color-primary-light)]">
-                TTS tidak didukung browser ini
-              </span>
-            )}
+      <main className="w-full max-w-3xl px-6 pt-8 pb-24 flex flex-col items-center flex-1">
+
+        {/* Exit + progress */}
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex justify-start mb-5">
+            <button onClick={() => router.push('/')}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+              style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container)' }}>
+              <span className="material-symbols-outlined text-base">close</span>
+              KELUAR
+            </button>
           </div>
-          
-          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-4 leading-tight">
+
+          <div className="flex justify-between items-end mb-3">
+            <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+              Langkah {currentStepIndex + 1} dari {result.steps.length}
+            </h2>
+            <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>{Math.round(progress)}% Selesai</span>
+          </div>
+
+          <div className="w-full h-3 rounded-full overflow-hidden"
+            style={{ background: 'rgba(169,203,224,0.3)' }}>
+            <div className="h-full rounded-full anim-pulse transition-all duration-500"
+              style={{ width: `${progress}%`, background: 'var(--color-tertiary-container)' }} />
+          </div>
+        </div>
+
+        {/* Main glass card */}
+        <div key={step.id}
+          className="w-full max-w-2xl glass-card rounded-[2rem] p-8 md:p-10 shadow-lifted mb-8 flex flex-col items-center text-center anim-fade-up">
+
+          {/* Step icon */}
+          <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6"
+            style={{ background: 'var(--color-primary-fixed)' }}>
+            <span className="material-symbols-outlined text-4xl filled" style={{ color: 'var(--color-primary)' }}>menu_book</span>
+          </div>
+
+          <h1 className="text-2xl font-bold mb-5 leading-tight"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-on-primary-container)' }}>
             {step.title}
-          </h2>
-          
-          <div className="text-[var(--color-text)] text-lg leading-relaxed space-y-4">
+          </h1>
+
+          <p className="text-lg leading-relaxed mb-8 max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
             {step.content}
-          </div>
+          </p>
+
+          {/* TTS button */}
+          {isTtsSupported ? (
+            <button
+              onClick={() => handleTTS(`${step.title}. ${step.content}`)}
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all squishy-btn"
+              style={isPlaying
+                ? { background: 'var(--color-on-primary-container)', color: 'var(--color-on-secondary)', boxShadow: '0 8px 20px rgba(76,100,85,0.2)' }
+                : { background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}
+              aria-label={isPlaying ? 'Hentikan suara' : 'Dengarkan panduan'}
+            >
+              <span className="material-symbols-outlined">{isPlaying ? 'stop_circle' : 'volume_up'}</span>
+              {isPlaying ? 'HENTIKAN SUARA' : 'DENGARKAN PANDUAN'}
+            </button>
+          ) : (
+            <span className="text-xs px-3 py-1.5 rounded-lg" style={{ color: 'var(--color-text-subtle)', background: 'var(--color-surface-container)' }}>
+              TTS tidak didukung browser ini
+            </span>
+          )}
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex items-center justify-between mt-6 shrink-0 gap-4">
+        {/* Navigation */}
+        <div className="w-full max-w-2xl flex items-center gap-4">
           <button
             onClick={() => navigateStep(currentStepIndex - 1)}
             disabled={isFirstStep}
-            className="px-6 py-3.5 rounded-xl font-medium transition-all min-w-[140px]"
-            style={{ 
-              background: isFirstStep ? 'transparent' : 'white',
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold transition-all squishy-btn border-2"
+            style={{
+              background: isFirstStep ? 'transparent' : 'var(--color-surface-container-high)',
               color: isFirstStep ? 'transparent' : 'var(--color-text-muted)',
-              border: isFirstStep ? 'none' : '1px solid var(--color-border)',
-              pointerEvents: isFirstStep ? 'none' : 'auto'
-            }}
-          >
-            ← Sebelumnya
+              borderColor: isFirstStep ? 'transparent' : 'var(--color-outline-variant)',
+              pointerEvents: isFirstStep ? 'none' : 'auto',
+            }}>
+            <span className="material-symbols-outlined">arrow_back</span> Kembali
           </button>
-          
+
           <button
             onClick={() => {
               if (isLastStep) {
@@ -185,15 +191,23 @@ export default function StepsPage() {
                 navigateStep(currentStepIndex + 1)
               }
             }}
-            className="px-8 py-3.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm min-w-[140px]"
-            style={{ 
-              background: isLastStep ? 'var(--color-amber)' : 'var(--color-primary)',
-            }}
-          >
-            {isLastStep ? 'Mulai Quiz ✨' : 'Selanjutnya →'}
+            className="flex-[1.5] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-white transition-all squishy-btn shadow-lifted"
+            style={{
+              background: isLastStep ? 'var(--color-primary)' : 'var(--color-primary)',
+              boxShadow: '0 8px 24px rgba(76,100,85,0.25)',
+            }}>
+            {isLastStep ? 'Mulai Kuis' : 'Selanjutnya'}
+            <span className="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
-      </section>
-    </main>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full py-6 border-t text-center" style={{ borderColor: 'var(--color-border)' }}>
+        <p className="text-xs" style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>
+          © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+        </p>
+      </footer>
+    </div>
   )
 }

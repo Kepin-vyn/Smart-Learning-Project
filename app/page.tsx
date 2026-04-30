@@ -236,312 +236,305 @@ export default function HomePage() {
 
   /* ══ RENDER ══════════════════════════════════════ */
   return (
-    <main className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
 
-      {/* ── Header ─────────────────────────────── */}
-      <header style={{ background: 'var(--color-surface)' }}>
-        <div className="max-w-3xl mx-auto px-6 py-7">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-              style={{ background: 'var(--color-primary-light)' }}>
-              🎯
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight leading-tight" style={{ color: 'var(--color-text)' }}>
-                Smart Step Learning Assistant
-              </h1>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-subtle)' }}>
-                Ubah materi panjang menjadi langkah belajar yang mudah dipahami
-              </p>
-            </div>
+      {/* ── Decorative BG blobs ── */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full blur-[100px]"
+          style={{ background: 'rgba(206,233,214,0.35)' }} />
+        <div className="absolute bottom-[5%] -right-[5%] w-[30%] h-[30%] rounded-full blur-[100px]"
+          style={{ background: 'rgba(221,217,253,0.25)' }} />
+      </div>
+
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 border-b"
+        style={{ background: 'rgba(251,249,244,0.85)', backdropFilter: 'blur(12px)', borderColor: 'var(--color-border)' }}>
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="material-symbols-outlined filled text-2xl" style={{ color: 'var(--color-primary-container)' }}>menu_book</span>
+            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
+              Smart Step Learning Assistant
+            </span>
           </div>
+          <nav className="hidden md:flex items-center gap-8 h-full">
+            <a href="#" className="text-sm font-semibold border-b-2 pb-0.5"
+              style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary-container)' }}>Beranda</a>
+            <a href="/history" className="text-sm transition-colors hover:text-primary"
+              style={{ color: 'var(--color-text-subtle)' }}>Riwayat Belajar</a>
+          </nav>
         </div>
       </header>
 
-      {/* ── Main card ──────────────────────────── */}
-      <section className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
-        <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'var(--color-surface)', boxShadow: '0 4px 32px rgba(76,100,85,)' }}>
+      {/* ── Main ── */}
+      <main className="flex-1 px-6 py-12 md:py-16">
+        <section className="max-w-4xl mx-auto">
 
-          {/* Card header */}
-          <div className="px-6 pt-6 pb-0">
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-              Masukkan Materi Belajar
-            </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-              Pilih cara memasukkan materi — ketik, unggah PDF, atau unggah foto
+          {/* Hero text */}
+          <div className="mb-10 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
+              Ayo mulai belajar dengan tenang.
+            </h1>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+              Masukkan materi yang ingin kamu pelajari hari ini. Kami akan membantumu membaginya
+              menjadi langkah-langkah kecil yang mudah dikuasai.
             </p>
-
-            {/* ── Tab bar ─── */}
-            <div role="tablist" aria-label="Pilihan input materi"
-              className="flex gap-1 mt-5 p-1 rounded-xl w-fit"
-              style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
-              <TabButton id="tab-text"  active={activeTab === 'text'}  onClick={() => switchTab('text')}  icon="✍️" label="Tulis Teks" />
-              <TabButton id="tab-pdf"   active={activeTab === 'pdf'}   onClick={() => switchTab('pdf')}   icon="📄" label="Upload PDF" />
-              <TabButton id="tab-image" active={activeTab === 'image'} onClick={() => switchTab('image')} icon="🖼️" label="Upload Gambar" />
-            </div>
           </div>
 
-          {/* ── Tab content ─── */}
-          <div className="px-6 pt-5 pb-2">
-            {notice && <NoticeBar notice={notice} onClose={() => setNotice(null)} />}
+          {/* Card */}
+          <div className="rounded-[2rem] p-2 mb-10 border shadow-card"
+            style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
 
-            {/* TEXT TAB */}
+            {/* Tab bar */}
+            <div className="flex flex-col md:flex-row gap-2 mb-2">
+              {([
+                { id: 'text' as Tab, icon: 'edit_note', label: 'Tulis Teks' },
+                { id: 'pdf' as Tab,  icon: 'picture_as_pdf', label: 'Upload PDF' },
+                { id: 'image' as Tab,icon: 'image', label: 'Upload Gambar' },
+              ] as const).map(({ id, icon, label }) => (
+                <button
+                  key={id}
+                  id={`tab-${id}`}
+                  onClick={() => switchTab(id)}
+                  role="tab"
+                  aria-selected={activeTab === id}
+                  className="flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200"
+                  style={activeTab === id
+                    ? { background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }
+                    : { color: 'var(--color-text-muted)', background: 'transparent' }}
+                >
+                  <span className="material-symbols-outlined text-xl">{icon}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Notice */}
+            <div className="px-4">
+              {notice && <NoticeBar notice={notice} onClose={() => setNotice(null)} />}
+            </div>
+
+            {/* Text tab */}
             {activeTab === 'text' && (
-              <div className="anim-fade-up">
-                <label htmlFor="text-input" className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Tulis atau tempel materi di sini
-                </label>
+              <div className="px-2 pb-2 anim-fade-up">
                 <textarea
                   id="text-input"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Contoh: Fotosintesis adalah proses yang digunakan oleh tumbuhan untuk mengubah cahaya matahari menjadi energi..."
-                  rows={9}
-                  className="w-full rounded-xl px-4 py-3 text-sm leading-relaxed resize-none transition-all duration-200"
+                  placeholder="Tulis atau tempel materi di sini..."
+                  rows={10}
+                  className="w-full rounded-[1.5rem] px-6 py-5 text-base leading-relaxed resize-none transition-all"
                   style={{
-                    border: '1.5px solid var(--color-border)',
+                    background: 'var(--color-surface-container-low)',
+                    border: '2px solid transparent',
                     color: 'var(--color-text)',
-                    background: 'var(--color-surface-2)',
                     outline: 'none',
                   }}
-                  onFocus={(e) => { e.target.style.borderColor = 'var(--color-primary)' }}
-                  onBlur={(e)  => { e.target.style.borderColor = 'var(--color-border)' }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--color-primary-fixed)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'transparent')}
                 />
-                <div className="flex justify-between items-center mt-1.5">
-                  <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>
-                    {textInput.length < 20 && textInput.length > 0 ? '⚠ Materi terlalu singkat' : ''}
+                <div className="flex justify-between items-center px-2 mt-2">
+                  <span className="text-sm flex items-center gap-1" style={{ color: 'var(--color-text-subtle)' }}>
+                    <span className="material-symbols-outlined text-sm">info</span>
+                    Minimum 50 kata untuk hasil optimal
                   </span>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--color-text-subtle)' }}>
+                  <span className="text-sm tabular-nums" style={{ color: 'var(--color-text-subtle)' }}>
                     {textInput.length.toLocaleString('id')} karakter
                   </span>
                 </div>
               </div>
             )}
 
-            {/* PDF TAB */}
+            {/* PDF tab */}
             {activeTab === 'pdf' && (
-              <div className="anim-fade-up">
-                <input
-                  ref={pdfRef} type="file" accept=".pdf" className="hidden"
-                  id="pdf-file-input"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setPdfFile(f) }}
-                />
+              <div className="px-2 pb-2 anim-fade-up">
+                <input ref={pdfRef} type="file" accept=".pdf" className="hidden" id="pdf-file-input"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setPdfFile(f) }} />
                 {!pdfFile ? (
-                  <DropZone
-                    dragging={pdfDrag}
-                    onClick={() => pdfRef.current?.click()}
+                  <DropZone dragging={pdfDrag} onClick={() => pdfRef.current?.click()}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
-                    onDragEnter={() => setPdfDrag(true)}
-                    onDragLeave={() => setPdfDrag(false)}
-                    onDrop={handlePdfDrop}
-                  >
-                    <div className="text-4xl">📄</div>
+                    onDragEnter={() => setPdfDrag(true)} onDragLeave={() => setPdfDrag(false)} onDrop={handlePdfDrop}>
+                    <span className="material-symbols-outlined text-5xl" style={{ color: 'var(--color-primary-container)' }}>picture_as_pdf</span>
                     <div className="text-center">
-                      <p className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>
-                        Klik atau seret file PDF ke sini
-                      </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                        Hanya PDF berbasis teks yang didukung · Maks 20 MB
-                      </p>
+                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>Klik atau seret file PDF ke sini</p>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>Hanya PDF berbasis teks · Maks 20 MB</p>
                     </div>
                   </DropZone>
                 ) : (
-                  <div className="rounded-xl p-4 flex items-center gap-4"
-                    style={{ background: 'var(--color-surface-2)', border: '1.5px solid var(--color-border)' }}>
-                    <div className="text-3xl">📄</div>
+                  <div className="rounded-2xl p-4 flex items-center gap-4"
+                    style={{ background: 'var(--color-surface-container-low)', border: '1.5px solid var(--color-border)' }}>
+                    <span className="material-symbols-outlined text-3xl" style={{ color: 'var(--color-primary)' }}>description</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate" style={{ color: 'var(--color-text)' }}>
-                        {pdfFile.name}
-                      </p>
+                      <p className="font-medium text-sm truncate" style={{ color: 'var(--color-text)' }}>{pdfFile.name}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                         {(pdfFile.size / 1024).toFixed(0)} KB
                         {isExtracting && <span className="ml-2 anim-pulse">· Membaca teks…</span>}
                       </p>
                     </div>
-                    {isExtracting
-                      ? <Spinner size={18} />
-                      : <button
-                          onClick={() => { setPdfFile(null); setPreviewText('') }}
-                          aria-label="Hapus file"
-                          className="text-sm px-3 py-1 rounded-lg transition-colors"
-                          style={{ color: 'var(--color-text-muted)', background: 'var(--color-border)' }}
-                        >Ganti</button>
-                    }
+                    {isExtracting ? <Spinner size={18} /> : (
+                      <button onClick={() => { setPdfFile(null); setPreviewText('') }}
+                        className="text-sm px-3 py-1.5 rounded-lg transition-colors"
+                        style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container)' }}>Ganti</button>
+                    )}
+                  </div>
+                )}
+                {/* Preview panel */}
+                {(pdfFile || previewText) && (
+                  <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: '1.5px solid var(--color-border)' }}>
+                    <div className="px-4 py-2.5 flex items-center justify-between"
+                      style={{ background: 'var(--color-surface-container)', borderBottom: '1px solid var(--color-border)' }}>
+                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Preview Teks</span>
+                      {previewText && <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>{previewText.length.toLocaleString('id')} karakter · bisa diedit</span>}
+                    </div>
+                    {isExtracting && !previewText ? (
+                      <div className="flex items-center gap-3 p-5" style={{ color: 'var(--color-text-muted)' }}>
+                        <Spinner size={16} /><span className="text-sm">Sedang membaca materi…</span>
+                      </div>
+                    ) : (
+                      <textarea id="preview-text" value={previewText} onChange={(e) => setPreviewText(e.target.value)}
+                        rows={7} placeholder="Teks dari PDF akan muncul di sini setelah file diunggah…"
+                        className="w-full px-4 py-3 text-sm leading-relaxed resize-none"
+                        style={{ color: 'var(--color-text)', background: 'var(--color-surface-container-lowest)', outline: 'none', border: 'none' }} />
+                    )}
                   </div>
                 )}
               </div>
             )}
 
-            {/* IMAGE TAB */}
+            {/* Image tab */}
             {activeTab === 'image' && (
-              <div className="anim-fade-up">
-                <input
-                  ref={imgRef} type="file" accept="image/jpeg,image/png" className="hidden"
-                  id="image-file-input"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) selectImage(f) }}
-                />
+              <div className="px-2 pb-2 anim-fade-up">
+                <input ref={imgRef} type="file" accept="image/jpeg,image/png" className="hidden" id="image-file-input"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) selectImage(f) }} />
                 {!imageFile ? (
-                  <DropZone
-                    dragging={imgDrag}
-                    onClick={() => imgRef.current?.click()}
+                  <DropZone dragging={imgDrag} onClick={() => imgRef.current?.click()}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
-                    onDragEnter={() => setImgDrag(true)}
-                    onDragLeave={() => setImgDrag(false)}
-                    onDrop={handleImageDrop}
-                  >
-                    <div className="text-4xl">🖼️</div>
+                    onDragEnter={() => setImgDrag(true)} onDragLeave={() => setImgDrag(false)} onDrop={handleImageDrop}>
+                    <span className="material-symbols-outlined text-5xl" style={{ color: 'var(--color-primary-container)' }}>image</span>
                     <div className="text-center">
-                      <p className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>
-                        Klik atau seret gambar ke sini
-                      </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                        Format JPG dan PNG · Maks 5 MB
-                      </p>
+                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>Klik atau seret gambar ke sini</p>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>Format JPG dan PNG · Maks 5 MB</p>
                     </div>
                   </DropZone>
                 ) : (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid var(--color-border)' }}>
+                  <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid var(--color-border)' }}>
                     {imagePreview && (
                       <div className="relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={imagePreview} alt="Preview gambar yang diunggah" className="w-full object-contain max-h-52" />
                         {isExtracting && (
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-                            style={{ background: 'rgba(76,100,85,)', color: '#fff' }}>
-                            <Spinner size={28} />
-                            <span className="text-sm font-medium">Membaca teks dari gambar…</span>
+                            style={{ background: 'rgba(76,100,85,0.6)', color: '#fff' }}>
+                            <Spinner size={28} /><span className="text-sm font-medium">Membaca teks dari gambar…</span>
                           </div>
                         )}
                       </div>
                     )}
-                    <div className="p-3 flex items-center gap-3" style={{ background: 'var(--color-surface-2)' }}>
-                      <span className="text-xs flex-1 truncate" style={{ color: 'var(--color-text-muted)' }}>
-                        {imageFile.name}
-                      </span>
+                    <div className="p-3 flex items-center gap-3" style={{ background: 'var(--color-surface-container)' }}>
+                      <span className="text-xs flex-1 truncate" style={{ color: 'var(--color-text-muted)' }}>{imageFile.name}</span>
                       {!isExtracting && (
-                        <button
-                          onClick={() => { setImageFile(null); setImagePreview(''); setPreviewText('') }}
-                          className="text-xs px-3 py-1 rounded-lg"
-                          style={{ color: 'var(--color-text-muted)', background: 'var(--color-border)' }}
-                        >Ganti</button>
+                        <button onClick={() => { setImageFile(null); setImagePreview(''); setPreviewText('') }}
+                          className="text-xs px-3 py-1.5 rounded-lg"
+                          style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container-high)' }}>Ganti</button>
                       )}
                     </div>
+                    {previewText && (
+                      <div className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="px-4 py-2" style={{ background: 'var(--color-surface-container)' }}>
+                          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Preview Teks · bisa diedit</span>
+                        </div>
+                        <textarea value={previewText} onChange={(e) => setPreviewText(e.target.value)}
+                          rows={6} className="w-full px-4 py-3 text-sm leading-relaxed resize-none"
+                          style={{ color: 'var(--color-text)', background: 'var(--color-surface-container-lowest)', outline: 'none', border: 'none' }} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* ── Preview panel (PDF & Image tabs) ─── */}
-          {(activeTab !== 'text') && (
-            <div className="px-6 pt-2 pb-4 anim-fade-up">
-              <div className="mt-3 rounded-xl overflow-hidden"
-                style={{ border: '1.5px solid var(--color-border)' }}>
-                <div className="px-4 py-2.5 flex items-center justify-between"
-                  style={{ background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border)' }}>
-                  <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
-                    Preview Teks Hasil Ekstraksi
-                  </span>
-                  {previewText && (
-                    <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>
-                      {previewText.length.toLocaleString('id')} karakter · bisa diedit
-                    </span>
-                  )}
-                </div>
-                {isExtracting && !previewText ? (
-                  <div className="flex items-center gap-3 p-5" style={{ color: 'var(--color-text-muted)' }}>
-                    <Spinner size={16} />
-                    <span className="text-sm">Sedang membaca materi…</span>
-                  </div>
-                ) : (
-                  <textarea
-                    id="preview-text"
-                    value={previewText}
-                    onChange={(e) => setPreviewText(e.target.value)}
-                    rows={7}
-                    placeholder={
-                      activeTab === 'pdf'
-                        ? 'Teks dari PDF akan muncul di sini setelah file diunggah…'
-                        : 'Teks dari gambar akan muncul di sini setelah gambar diunggah…'
-                    }
-                    className="w-full px-4 py-3 text-sm leading-relaxed resize-none"
-                    style={{ color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', border: 'none' }}
-                    aria-label="Preview dan edit teks yang diekstrak"
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── Process button ──────────────────────── */}
-          <div className="px-6 pb-6 pt-2">
+          {/* Process button */}
+          <div className="flex justify-center mb-10">
             <button
               id="btn-process"
               onClick={handleProcess}
               disabled={!canProcess}
               aria-busy={isProcessing}
-              className="w-full py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-3 transition-all duration-200"
-              style={
-                canProcess
-                  ? {
-                      background: 'var(--color-primary)',
-                      color: '#fff',
-                      boxShadow: '0 4px 16px rgba(76,100,85,)',
-                      cursor: 'pointer',
-                    }
-                  : {
-                      background: 'var(--color-surface-2)',
-                      color: 'var(--color-text-subtle)',
-                      cursor: 'not-allowed',
-                      border: '1.5px solid var(--color-border)',
-                    }
-              }
+              className="group flex items-center gap-4 px-12 py-5 rounded-full font-bold text-lg squishy-btn transition-all duration-300"
+              style={canProcess
+                ? {
+                    background: 'var(--color-primary-fixed)',
+                    color: 'var(--color-on-primary-container)',
+                    boxShadow: '0 20px 40px -10px rgba(143,169,152,0.4)',
+                    cursor: 'pointer',
+                  }
+                : {
+                    background: 'var(--color-surface-container-high)',
+                    color: 'var(--color-text-subtle)',
+                    cursor: 'not-allowed',
+                  }}
             >
               {isProcessing ? (
-                <>
-                  <Spinner size={20} />
-                  <span>AI sedang menyusun langkah belajar…</span>
-                </>
+                <><Spinner size={22} /><span>AI sedang menyusun langkah belajar…</span></>
               ) : (
                 <>
-                  <span>✨</span>
+                  <span className="material-symbols-outlined filled transition-transform group-hover:rotate-12">auto_awesome</span>
                   <span>Proses Materi</span>
-                  <span style={{ opacity: 0.8 }}>→</span>
                 </>
               )}
             </button>
-            {!canProcess && !isProcessing && contentForProcessing.length > 0 && contentForProcessing.length < 20 && (
-              <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-subtle)' }}>
-                Tambahkan lebih banyak teks agar AI dapat memproses materi dengan baik
-              </p>
-            )}
-            {!canProcess && !isProcessing && contentForProcessing.length === 0 && (
-              <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-subtle)' }}>
-                Masukkan materi terlebih dahulu
-              </p>
-            )}
           </div>
 
+          {/* Bento feature cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { icon: 'psychology', color: 'var(--color-tertiary-container)', textColor: 'var(--color-tertiary)', title: 'Analisis Cerdas', desc: 'AI kami akan membedah materi kompleks menjadi poin-poin yang mudah dikuasai.' },
+              { icon: 'rebase_edit', color: 'var(--color-secondary-container)', textColor: 'var(--color-secondary)', title: 'Metode Adaptif', desc: 'Konten disesuaikan dengan ritme belajarmu, tanpa rasa terburu-buru.' },
+              { icon: 'task_alt', color: 'var(--color-primary-fixed)', textColor: 'var(--color-primary)', title: 'Evaluasi Terukur', desc: 'Cek pemahamanmu dengan kuis interaktif di akhir setiap sesi.' },
+            ].map(({ icon, color, textColor, title, desc }) => (
+              <div key={title} className="bento-card p-7 rounded-[2rem] border"
+                style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                  style={{ background: color, color: textColor }}>
+                  <span className="material-symbols-outlined">{icon}</span>
+                </div>
+                <h4 className="font-semibold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>{title}</h4>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+
+        </section>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="py-8 border-t text-center"
+        style={{ borderColor: 'var(--color-border)' }}>
+        <div className="flex justify-center gap-8 mb-3">
+          {['Pusat Bantuan', 'Privasi', 'Panduan Pengguna'].map((l) => (
+            <a key={l} href="#" className="text-xs transition-colors hover:text-primary"
+              style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>{l}</a>
+          ))}
         </div>
-
-        {/* ── Tip box ──────────────────────────── */}
-        <div className="mt-4 px-5 py-4 rounded-xl text-sm"
-          style={{ background: 'rgba(76,100,85,)', border: '1px solid var(--color-primary-muted)' }}>
-          <p className="font-medium mb-1" style={{ color: 'var(--color-primary)' }}>💡 Tips penggunaan</p>
-          <ul className="space-y-1 text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-            <li>• Materi yang lebih panjang menghasilkan langkah belajar yang lebih lengkap</li>
-            <li>• PDF hasil scan gambar → gunakan tab <strong>Upload Gambar</strong> untuk hasil lebih baik</li>
-            <li>• Kamu bisa mengedit teks hasil ekstraksi sebelum diproses</li>
-          </ul>
-        </div>
-
-      </section>
-
-      {/* ── Footer ─────────────────────────────── */}
-      <footer className="py-5 text-center text-xs" style={{ color: 'var(--color-text-subtle)' }}>
-        Smart Step Learning Assistant · Belajar dengan cara yang nyaman untukmu
+        <p className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>
+          © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+        </p>
       </footer>
-    </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center h-16 px-4 z-50"
+        style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--color-primary)' }}>
+          <span className="material-symbols-outlined filled">home</span>
+          <span className="text-[10px] font-bold">Beranda</span>
+        </button>
+        <button onClick={() => router.push('/history')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--color-text-subtle)' }}>
+          <span className="material-symbols-outlined">history</span>
+          <span className="text-[10px] font-medium">Riwayat</span>
+        </button>
+      </nav>
+
+    </div>
   )
 }

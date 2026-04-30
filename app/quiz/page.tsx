@@ -6,16 +6,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { saveSession } from '@/lib/sessions'
 import type { SessionRecord } from '@/lib/types'
 
-interface ShuffledOption {
-  text: string
-  originalIndex: number
-}
-
-interface MissedQuestion {
-  question: string
-  correctAnswer: string
-  explanation: string
-}
+interface ShuffledOption { text: string; originalIndex: number }
+interface MissedQuestion { question: string; correctAnswer: string; explanation: string }
 
 export default function QuizPage() {
   const router = useRouter()
@@ -26,24 +18,18 @@ export default function QuizPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [missedQuestions, setMissedQuestions] = useState<MissedQuestion[]>([])
-  
-  // Quiz state for the current question
   const [shuffledOptions, setShuffledOptions] = useState<ShuffledOption[]>([])
   const [retryCount, setRetryCount] = useState(0)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'warning' | null, message: string }>({ type: null, message: '' })
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'warning' | null; message: string }>({ type: null, message: '' })
   const [isRevealed, setIsRevealed] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
 
-  // Initialization and generation
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   const generateQuiz = useCallback(async (forcedDifficulty?: 'easy' | 'normal' | 'hard') => {
     if (!result?.steps) return
     setIsGenerating(true)
     const targetDifficulty = forcedDifficulty || difficulty
-
     try {
       const res = await fetch('/api/quiz', {
         method: 'POST',
@@ -62,24 +48,18 @@ export default function QuizPage() {
       }
     } catch {
       setFeedback({ type: 'warning', message: 'Kuis belum siap, mari coba lagi sebentar.' })
-    } finally {
-      setIsGenerating(false)
-    }
+    } finally { setIsGenerating(false) }
   }, [result, setQuizResult, difficulty])
 
   useEffect(() => {
-    if (mounted && result?.steps && !quizResult && !isGenerating) {
-      generateQuiz()
-    }
+    if (mounted && result?.steps && !quizResult && !isGenerating) generateQuiz()
   }, [mounted, result, quizResult, isGenerating, generateQuiz])
 
-  // Setup current question options
   useEffect(() => {
     if (quizResult?.questions && quizResult.questions[currentQuestionIndex]) {
       const q = quizResult.questions[currentQuestionIndex]
-      const optionsWithIndices = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }))
+      const optionsWithIndices = q.options.map((opt: string, idx: number) => ({ text: opt, originalIndex: idx }))
       const shuffled = [...optionsWithIndices].sort(() => Math.random() - 0.5)
-      
       setShuffledOptions(shuffled)
       setRetryCount(0)
       setFeedback({ type: null, message: '' })
@@ -88,50 +68,36 @@ export default function QuizPage() {
     }
   }, [quizResult, currentQuestionIndex])
 
-  // Handle Quiz Finished
   useEffect(() => {
     if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length && quizResult.questions.length > 0) {
       const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
       setLatestScore(score)
-
       const newDifficulty = score < 60 ? 'easy' : score >= 80 ? 'hard' : 'normal'
       setDifficulty(newDifficulty)
-
       const topic = result?.steps?.[0]?.title ?? 'Materi tanpa judul'
-      
-      // Deduplicate missed questions
       const uniqueMissed = Array.from(new Map(missedQuestions.map(item => [item.question, item])).values())
-
       const session: SessionRecord = {
-        id: `session_${Date.now()}`,
-        date: new Date().toISOString(),
-        topic,
-        score,
-        totalSteps: result?.totalSteps ?? result?.steps?.length ?? 0,
-        difficulty,
-        missedQuestions: uniqueMissed,
-        status: score >= 60 ? 'lulus' : 'perlu-review'
+        id: `session_${Date.now()}`, date: new Date().toISOString(), topic, score,
+        totalSteps: result?.totalSteps ?? result?.steps?.length ?? 0, difficulty,
+        missedQuestions: uniqueMissed, status: score >= 60 ? 'lulus' : 'perlu-review'
       }
       saveSession(session)
-
       localStorage.setItem('smartstep_last_session', JSON.stringify(session))
       router.push('/summary')
     }
   }, [quizResult, currentQuestionIndex, correctAnswers, missedQuestions, setLatestScore, setDifficulty, result, difficulty, router])
 
-  if (!mounted) return <div className="min-h-screen bg-[var(--color-bg)]" />
+  if (!mounted) return <div className="min-h-screen" style={{ background: 'var(--color-bg)' }} />
 
   if (!result || !result.steps) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--color-bg)' }}>
-        <div className="text-center bg-white p-10 rounded-2xl shadow-sm max-w-md w-full">
-          <div className="text-5xl mb-4">📭</div>
-          <h1 className="text-xl font-bold text-[var(--color-text)]">Belum Ada Materi</h1>
-          <button 
-            onClick={() => router.push('/')}
-            className="inline-block mt-6 px-6 py-3 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ background: 'var(--color-primary)' }}
-          >
+        <div className="text-center p-12 rounded-[2rem] max-w-md w-full shadow-card"
+          style={{ background: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-border)' }}>
+          <span className="material-symbols-outlined text-5xl block mb-4" style={{ color: 'var(--color-primary-container)' }}>inbox</span>
+          <h1 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Belum Ada Materi</h1>
+          <button onClick={() => router.push('/')} className="px-6 py-3 rounded-full font-semibold text-sm squishy-btn"
+            style={{ background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}>
             ← Kembali ke Beranda
           </button>
         </div>
@@ -139,11 +105,29 @@ export default function QuizPage() {
     )
   }
 
+  /* ── Loading state (Stitch: loading_kuis_focused_view) ── */
   if (isGenerating || !quizResult) {
     return (
-      <main className="h-screen flex flex-col items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <div className="animate-spin text-4xl mb-4">✨</div>
-        <h2 className="text-[var(--color-text)] font-medium text-lg">Menyiapkan kuis khusus untukmu...</h2>
+      <main className="h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--color-bg)' }}>
+        {/* Decorative aura */}
+        <div className="mb-10 relative anim-pulse-gentle">
+          <div className="absolute inset-0 rounded-full blur-3xl scale-150" style={{ background: 'rgba(143,169,152,0.15)' }} />
+          <div className="relative p-10 rounded-[3rem] shadow-card border" style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-outline-variant)' }}>
+            <span className="material-symbols-outlined text-7xl filled" style={{ color: 'var(--color-primary-container)' }}>auto_awesome</span>
+          </div>
+        </div>
+        <h2 className="text-xl font-semibold mb-3 text-center" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-muted)' }}>
+          Menyiapkan kuis khusus untukmu...
+        </h2>
+        <p className="text-sm text-center max-w-xs mb-8" style={{ color: 'var(--color-text-subtle)' }}>
+          Kami sedang merangkai pertanyaan yang sesuai dengan perkembangan belajarmu.
+        </p>
+        <div className="w-56 h-1 rounded-full overflow-hidden relative" style={{ background: 'var(--color-surface-container-high)' }}>
+          <div className="h-full w-2/3 rounded-full shimmer-bar relative" style={{ background: 'var(--color-primary-container)', opacity: 0.8 }} />
+        </div>
+        <p className="text-xs mt-8 uppercase tracking-widest opacity-40" style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-outline)' }}>
+          Tenang, semua akan baik-baik saja.
+        </p>
       </main>
     )
   }
@@ -154,29 +138,28 @@ export default function QuizPage() {
   if (isFinished) {
     return (
       <main className="h-screen flex flex-col items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <div className="animate-spin text-4xl mb-4">⏳</div>
-        <h2 className="text-[var(--color-text)] font-medium text-lg">Menyiapkan ringkasan sesimu...</h2>
+        <div className="anim-pulse-gentle mb-4">
+          <span className="material-symbols-outlined text-6xl" style={{ color: 'var(--color-primary-container)' }}>hourglass_top</span>
+        </div>
+        <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-muted)' }}>Menyiapkan ringkasan sesimu...</h2>
       </main>
     )
   }
 
   const handleOptionClick = (originalIndex: number) => {
     if (isRevealed || showExplanation) return
-
     if (originalIndex === question.correctIndex) {
-      setFeedback({ type: 'success', message: 'Luar biasa! Jawabanmu tepat.' })
+      setFeedback({ type: 'success', message: 'Luar biasa! Jawabanmu tepat. 🌿' })
       setIsRevealed(true)
       setShowExplanation(true)
       if (retryCount === 0) setCorrectAnswers(prev => prev + 1)
     } else {
       const newRetry = retryCount + 1
       setRetryCount(newRetry)
-      
       if (newRetry >= 2) {
         setFeedback({ type: 'warning', message: 'Mari kita pelajari bersama jawaban yang paling tepat.' })
         setIsRevealed(true)
         setShowExplanation(true)
-        // Track this as a missed question
         setMissedQuestions(prev => [...prev, {
           question: question.question,
           correctAnswer: question.options[question.correctIndex],
@@ -188,105 +171,130 @@ export default function QuizPage() {
     }
   }
 
+  const progress = ((currentQuestionIndex + 1) / quizResult.questions.length) * 100
+
+  /* ── Quiz UI (Stitch: quiz_focused_view) ── */
   return (
-    <main className="h-screen overflow-hidden flex flex-col" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <header className="bg-white px-6 py-4 border-b border-[var(--color-border)] shadow-sm shrink-0">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
-          <button 
-            onClick={() => router.push('/steps')}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-2 -ml-2 rounded-lg hover:bg-[var(--color-surface-2)]"
-          >
-            ← Materi
-          </button>
-          
-          <div className="flex-1 max-w-md text-center">
-            <div className="text-xs font-semibold text-[var(--color-text-muted)] mb-2 tracking-wide">
-              SOAL {currentQuestionIndex + 1} DARI {quizResult.questions.length}
+    <div className="min-h-screen flex flex-col items-center py-10 px-6" style={{ background: 'var(--color-bg)' }}>
+
+      {/* Decorative bg */}
+      <div className="fixed bottom-0 right-0 -z-10 opacity-20 pointer-events-none p-12">
+        <div className="w-64 h-64 rounded-full blur-[80px]" style={{ background: 'var(--color-primary-fixed)' }} />
+      </div>
+
+      <main className="w-full max-w-4xl">
+
+        {/* Logo compact */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <span className="material-symbols-outlined text-3xl filled" style={{ color: 'var(--color-primary)' }}>eco</span>
+          <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Smart Step</span>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-6 w-full">
+          <div className="flex justify-between items-end mb-2">
+            <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--color-primary)' }}>
+              Pertanyaan {currentQuestionIndex + 1} dari {quizResult.questions.length}
+            </span>
+            <span className="text-sm" style={{ color: 'var(--color-text-subtle)' }}>{Math.round(progress)}%</span>
+          </div>
+          <div className="h-3 w-full rounded-full overflow-hidden" style={{ background: 'var(--color-surface-container)' }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${progress}%`, background: 'var(--color-primary-container)' }} />
+          </div>
+        </div>
+
+        {/* Quiz card */}
+        <section className="rounded-[2.5rem] p-8 md:p-12 shadow-lifted mb-6 border anim-fade-up"
+          style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-surface-container-high)' }}>
+
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-14 h-14 flex items-center justify-center rounded-2xl" style={{ background: 'var(--color-primary-fixed)' }}>
+              <span className="material-symbols-outlined text-3xl" style={{ color: 'var(--color-primary)' }}>psychology</span>
             </div>
-            <div className="h-2 w-full bg-[var(--color-primary-light)] rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-out rounded-full"
-                style={{ width: `${((currentQuestionIndex + 1) / quizResult.questions.length) * 100}%` }}
-              />
-            </div>
+            <h2 className="text-xl font-bold leading-snug flex-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+              {question.question}
+            </h2>
           </div>
 
-          <div className="w-16" />
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <section className="flex-1 w-full max-w-2xl mx-auto px-6 py-8 flex flex-col justify-center relative overflow-y-auto">
-        <div className="bg-white rounded-2xl p-8 shadow-[0_4px_32px_rgba(76,100,85,)] anim-fade-up">
-          
-          <h2 className="text-xl md:text-2xl font-bold text-[var(--color-text)] mb-8 leading-relaxed">
-            {question.question}
-          </h2>
-
-          {/* Options */}
-          <div className="space-y-3">
+          {/* Options grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             {shuffledOptions.map((opt, idx) => {
-              let btnStyle = "bg-white border-2 border-[var(--color-primary-light)] text-[var(--color-text)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-2)]"
-              
-              if (isRevealed) {
-                if (opt.originalIndex === question.correctIndex) {
-                  btnStyle = "bg-[var(--color-green-bg)] border-2 border-[var(--color-green)] text-[var(--color-text)] font-semibold"
-                } else {
-                  btnStyle = "bg-[var(--color-surface-2)] border-2 border-[var(--color-primary-light)] text-[var(--color-text-subtle)] opacity-70 cursor-not-allowed"
-                }
-              }
+              const labels = ['A', 'B', 'C', 'D']
+              const isCorrect = isRevealed && opt.originalIndex === question.correctIndex
+              const isWrong = isRevealed && opt.originalIndex !== question.correctIndex
 
               return (
                 <button
                   key={idx}
                   onClick={() => handleOptionClick(opt.originalIndex)}
                   disabled={isRevealed}
-                  className={`w-full text-left p-4 rounded-xl transition-all text-[1.05rem] ${btnStyle}`}
+                  className={`group flex flex-col items-start text-left p-5 rounded-[1.5rem] transition-all border-2 ${
+                    isCorrect ? 'anim-pulse-green' : ''
+                  }`}
+                  style={isCorrect
+                    ? { background: 'rgba(143,169,152,0.12)', borderColor: 'var(--color-primary-container)', color: 'var(--color-on-primary-container)' }
+                    : isWrong
+                    ? { background: '#fff8f0', borderColor: '#f0c070', color: '#8a6000', opacity: 0.8 }
+                    : { background: 'var(--color-surface-container-low)', borderColor: 'transparent', color: 'var(--color-text)' }}
                 >
-                  {opt.text}
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <span className="font-bold text-sm" style={{ color: isCorrect ? 'var(--color-primary-container)' : isWrong ? '#8a6000' : 'var(--color-text-subtle)' }}>
+                      Opsi {labels[idx]}
+                    </span>
+                    {isCorrect && (
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: 'var(--color-primary)', color: '#fff' }}>
+                        <span className="material-symbols-outlined text-sm filled">check</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-base leading-relaxed">{opt.text}</p>
+                  {isCorrect && (
+                    <div className="mt-3 flex items-center gap-1.5" style={{ color: 'var(--color-primary)' }}>
+                      <span className="material-symbols-outlined text-base">verified</span>
+                      <span className="text-sm font-semibold">Bagus sekali! Kamu benar 🌿</span>
+                    </div>
+                  )}
                 </button>
               )
             })}
           </div>
 
-          {/* Feedback Section */}
+          {/* Feedback */}
           {feedback.message && (
-            <div 
-              className={`mt-6 p-4 rounded-xl border flex items-start gap-3 anim-fade-up ${
-                feedback.type === 'success' 
-                  ? 'bg-[var(--color-green-bg)] border-[var(--color-green-border)] text-[var(--color-green)]' 
-                  : 'bg-[var(--color-amber-bg)] border-[var(--color-amber-border)] text-[var(--color-amber)]'
-              }`}
-            >
-              <div className="text-xl mt-0.5">
-                {feedback.type === 'success' ? '✨' : '💡'}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-[1.05rem]">{feedback.message}</p>
-                {showExplanation && (
-                  <p className="mt-2 text-sm opacity-90 leading-relaxed">
-                    {question.explanation}
-                  </p>
-                )}
+            <div className="mt-6 p-4 rounded-2xl flex items-start gap-3 anim-fade-up border"
+              style={feedback.type === 'success'
+                ? { background: 'var(--color-green-bg)', borderColor: 'var(--color-green-border)', color: 'var(--color-green)' }
+                : { background: 'var(--color-amber-bg)', borderColor: 'var(--color-amber-border)', color: 'var(--color-amber)' }}>
+              <span className="text-xl mt-0.5">{feedback.type === 'success' ? '✨' : '💡'}</span>
+              <div>
+                <p className="font-semibold">{feedback.message}</p>
+                {showExplanation && <p className="mt-1.5 text-sm leading-relaxed opacity-90">{question.explanation}</p>}
               </div>
             </div>
           )}
+        </section>
 
-          {/* Next Button */}
-          {showExplanation && (
-            <div className="mt-8 flex justify-end anim-fade-up">
-              <button
-                onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                className="px-8 py-3.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-                style={{ background: 'var(--color-primary)' }}
-              >
-                {currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan ✨' : 'Soal Selanjutnya →'}
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-    </main>
+        {/* Next button */}
+        {showExplanation && (
+          <div className="flex justify-center anim-fade-up">
+            <button
+              onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+              className="flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg text-white shadow-lifted squishy-btn transition-all"
+              style={{ background: 'var(--color-primary)', boxShadow: '0 8px 24px rgba(76,100,85,0.3)' }}>
+              <span>{currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan' : 'Lanjutkan Pertanyaan'}</span>
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="text-center mt-10">
+          <p className="text-xs" style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>
+            © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+          </p>
+        </footer>
+      </main>
+    </div>
   )
 }
