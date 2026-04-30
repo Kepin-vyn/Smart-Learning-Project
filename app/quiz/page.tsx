@@ -119,18 +119,18 @@ export default function QuizPage() {
     }
   }, [quizResult, currentQuestionIndex, correctAnswers, missedQuestions, setLatestScore, setDifficulty, result, difficulty, router])
 
-  if (!mounted) return <div className="min-h-screen bg-[#EFF3F7]" />
+  if (!mounted) return <div className="min-h-screen bg-[var(--color-bg)]" />
 
   if (!result || !result.steps) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6" style={{ background: '#EFF3F7' }}>
+      <main className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--color-bg)' }}>
         <div className="text-center bg-white p-10 rounded-2xl shadow-sm max-w-md w-full">
           <div className="text-5xl mb-4">📭</div>
-          <h1 className="text-xl font-bold text-[#1C2B3A]">Belum Ada Materi</h1>
+          <h1 className="text-xl font-bold text-[var(--color-text)]">Belum Ada Materi</h1>
           <button 
             onClick={() => router.push('/')}
             className="inline-block mt-6 px-6 py-3 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ background: '#3B6B7C' }}
+            style={{ background: 'var(--color-primary)' }}
           >
             ← Kembali ke Beranda
           </button>
@@ -141,9 +141,9 @@ export default function QuizPage() {
 
   if (isGenerating || !quizResult) {
     return (
-      <main className="h-screen flex flex-col items-center justify-center" style={{ background: '#EFF3F7' }}>
+      <main className="h-screen flex flex-col items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="animate-spin text-4xl mb-4">✨</div>
-        <h2 className="text-[#1C2B3A] font-medium text-lg">Menyiapkan kuis khusus untukmu...</h2>
+        <h2 className="text-[var(--color-text)] font-medium text-lg">Menyiapkan kuis khusus untukmu...</h2>
       </main>
     )
   }
@@ -153,9 +153,9 @@ export default function QuizPage() {
 
   if (isFinished) {
     return (
-      <main className="h-screen flex flex-col items-center justify-center" style={{ background: '#EFF3F7' }}>
+      <main className="h-screen flex flex-col items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="animate-spin text-4xl mb-4">⏳</div>
-        <h2 className="text-[#1C2B3A] font-medium text-lg">Menyiapkan ringkasan sesimu...</h2>
+        <h2 className="text-[var(--color-text)] font-medium text-lg">Menyiapkan ringkasan sesimu...</h2>
       </main>
     )
   }
@@ -189,24 +189,24 @@ export default function QuizPage() {
   }
 
   return (
-    <main className="h-screen overflow-hidden flex flex-col" style={{ background: '#EFF3F7' }}>
+    <main className="h-screen overflow-hidden flex flex-col" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
-      <header className="bg-white px-6 py-4 border-b border-[#CCDAE4] shadow-sm shrink-0">
+      <header className="bg-white px-6 py-4 border-b border-[var(--color-border)] shadow-sm shrink-0">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
           <button 
             onClick={() => router.push('/steps')}
-            className="text-[#536878] hover:text-[#1C2B3A] transition-colors p-2 -ml-2 rounded-lg hover:bg-[#F7FAFB]"
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-2 -ml-2 rounded-lg hover:bg-[var(--color-surface-2)]"
           >
             ← Materi
           </button>
           
           <div className="flex-1 max-w-md text-center">
-            <div className="text-xs font-semibold text-[#536878] mb-2 tracking-wide">
+            <div className="text-xs font-semibold text-[var(--color-text-muted)] mb-2 tracking-wide">
               SOAL {currentQuestionIndex + 1} DARI {quizResult.questions.length}
             </div>
-            <div className="h-2 w-full bg-[#E8F2F6] rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-[var(--color-primary-light)] rounded-full overflow-hidden">
               <div 
-                className="h-full bg-[#3B6B7C] transition-all duration-500 ease-out rounded-full"
+                className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-out rounded-full"
                 style={{ width: `${((currentQuestionIndex + 1) / quizResult.questions.length) * 100}%` }}
               />
             </div>
@@ -218,22 +218,22 @@ export default function QuizPage() {
 
       {/* Main Content */}
       <section className="flex-1 w-full max-w-2xl mx-auto px-6 py-8 flex flex-col justify-center relative overflow-y-auto">
-        <div className="bg-white rounded-2xl p-8 shadow-[0_4px_32px_rgba(36,59,85,0.08)] anim-fade-up">
+        <div className="bg-white rounded-2xl p-8 shadow-[0_4px_32px_rgba(76,100,85,)] anim-fade-up">
           
-          <h2 className="text-xl md:text-2xl font-bold text-[#1C2B3A] mb-8 leading-relaxed">
+          <h2 className="text-xl md:text-2xl font-bold text-[var(--color-text)] mb-8 leading-relaxed">
             {question.question}
           </h2>
 
           {/* Options */}
           <div className="space-y-3">
             {shuffledOptions.map((opt, idx) => {
-              let btnStyle = "bg-white border-2 border-[#E8F2F6] text-[#1C2B3A] hover:border-[#3B6B7C] hover:bg-[#F7FAFB]"
+              let btnStyle = "bg-white border-2 border-[var(--color-primary-light)] text-[var(--color-text)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-2)]"
               
               if (isRevealed) {
                 if (opt.originalIndex === question.correctIndex) {
-                  btnStyle = "bg-[#E6F4EA] border-2 border-[#3A8C6E] text-[#1C2B3A] font-semibold"
+                  btnStyle = "bg-[var(--color-green-bg)] border-2 border-[var(--color-green)] text-[var(--color-text)] font-semibold"
                 } else {
-                  btnStyle = "bg-[#F7FAFB] border-2 border-[#E8F2F6] text-[#8DA4B4] opacity-70 cursor-not-allowed"
+                  btnStyle = "bg-[var(--color-surface-2)] border-2 border-[var(--color-primary-light)] text-[var(--color-text-subtle)] opacity-70 cursor-not-allowed"
                 }
               }
 
@@ -255,8 +255,8 @@ export default function QuizPage() {
             <div 
               className={`mt-6 p-4 rounded-xl border flex items-start gap-3 anim-fade-up ${
                 feedback.type === 'success' 
-                  ? 'bg-[#E6F4EA] border-[#CDE9D6] text-[#2E6B52]' 
-                  : 'bg-[#FFF9E6] border-[#FFECB3] text-[#A67C00]'
+                  ? 'bg-[var(--color-green-bg)] border-[var(--color-green-border)] text-[var(--color-green)]' 
+                  : 'bg-[var(--color-amber-bg)] border-[var(--color-amber-border)] text-[var(--color-amber)]'
               }`}
             >
               <div className="text-xl mt-0.5">
@@ -279,7 +279,7 @@ export default function QuizPage() {
               <button
                 onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                 className="px-8 py-3.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-                style={{ background: '#3B6B7C' }}
+                style={{ background: 'var(--color-primary)' }}
               >
                 {currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan ✨' : 'Soal Selanjutnya →'}
               </button>

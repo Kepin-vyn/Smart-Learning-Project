@@ -81,18 +81,18 @@ export default function PomodoroTimer() {
   // If we are on break, show a full screen overlay blocking the content gently
   if (pomodoroMode === 'break' && isPomodoroRunning) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#E8F2F6] bg-opacity-95 backdrop-blur-sm anim-fade-up">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-primary-light)] bg-opacity-95 backdrop-blur-sm anim-fade-up">
         <div className="text-6xl mb-4">🌿</div>
-        <h2 className="text-3xl font-bold text-[#3B6B7C] mb-2">Waktunya istirahat sejenak</h2>
-        <p className="text-[#536878] text-lg mb-8">Peregangan tubuh dan minum air putih yuk!</p>
+        <h2 className="text-3xl font-bold text-[var(--color-primary)] mb-2">Waktunya istirahat sejenak</h2>
+        <p className="text-[var(--color-text-muted)] text-lg mb-8">Peregangan tubuh dan minum air putih yuk!</p>
         
-        <div className="text-5xl font-mono font-bold text-[#1C2B3A] bg-white px-8 py-4 rounded-3xl shadow-sm mb-8">
+        <div className="text-5xl font-mono font-bold text-[var(--color-text)] bg-white px-8 py-4 rounded-3xl shadow-sm mb-8">
           {timeLeftStr}
         </div>
 
         <button 
           onClick={stopPomodoro}
-          className="px-6 py-3 rounded-xl font-medium text-[#536878] border-2 border-[#CCDAE4] hover:bg-white transition-colors"
+          className="px-6 py-3 rounded-xl font-medium text-[var(--color-text-muted)] border-2 border-[var(--color-border)] hover:bg-white transition-colors"
         >
           Lewati Istirahat
         </button>
@@ -102,28 +102,28 @@ export default function PomodoroTimer() {
 
   return (
     <div className="fixed bottom-6 right-6 z-40">
-      <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(36,59,85,0.1)] p-4 border border-[#E8F2F6] flex flex-col items-center">
+      <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(76,100,85,)] p-4 border border-[var(--color-primary-light)] flex flex-col items-center">
         
         {showSettings ? (
           <div className="flex flex-col gap-3 mb-3 text-sm">
             <div className="flex justify-between items-center gap-4">
-              <span className="text-[#536878]">Belajar (m)</span>
+              <span className="text-[var(--color-text-muted)]">Belajar (m)</span>
               <input type="number" value={localStudy} onChange={e => setLocalStudy(Number(e.target.value))} className="w-16 p-1 border rounded text-center" />
             </div>
             <div className="flex justify-between items-center gap-4">
-              <span className="text-[#536878]">Istirahat (m)</span>
+              <span className="text-[var(--color-text-muted)]">Istirahat (m)</span>
               <input type="number" value={localBreak} onChange={e => setLocalBreak(Number(e.target.value))} className="w-16 p-1 border rounded text-center" />
             </div>
-            <button onClick={handleSaveSettings} className="w-full bg-[#3B6B7C] text-white py-1.5 rounded-lg font-medium text-xs">Simpan</button>
+            <button onClick={handleSaveSettings} className="w-full bg-[var(--color-primary)] text-white py-1.5 rounded-lg font-medium text-xs">Simpan</button>
           </div>
         ) : null}
 
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-[0.65rem] font-bold text-[#8DA4B4] uppercase tracking-widest mb-1">
+            <div className="text-[0.65rem] font-bold text-[var(--color-text-subtle)] uppercase tracking-widest mb-1">
               {pomodoroMode === 'idle' ? 'Pomodoro' : 'Fokus Belajar'}
             </div>
-            <div className="text-2xl font-mono font-bold text-[#1C2B3A] tracking-tight">
+            <div className="text-2xl font-mono font-bold text-[var(--color-text)] tracking-tight">
               {timeLeftStr}
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function PomodoroTimer() {
             {!isPomodoroRunning ? (
               <button 
                 onClick={() => startPomodoro('study')}
-                className="bg-[#3A8C6E] text-white w-8 h-8 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
+                className="bg-[var(--color-green)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
                 title="Mulai Belajar"
               >
                 ▶
@@ -140,7 +140,7 @@ export default function PomodoroTimer() {
             ) : (
               <button 
                 onClick={stopPomodoro}
-                className="bg-[#C47E2A] text-white w-8 h-8 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
+                className="bg-[var(--color-amber)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
                 title="Hentikan Timer"
               >
                 ⏹
@@ -149,7 +149,7 @@ export default function PomodoroTimer() {
             
             <button 
               onClick={() => setShowSettings(!showSettings)}
-              className="bg-[#F7FAFB] text-[#8DA4B4] border border-[#E8F2F6] w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8F2F6] transition-colors"
+              className="bg-[var(--color-surface-2)] text-[var(--color-text-subtle)] border border-[var(--color-primary-light)] w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-primary-light)] transition-colors"
               title="Pengaturan Timer"
             >
               ⚙️

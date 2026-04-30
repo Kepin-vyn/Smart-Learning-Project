@@ -34,7 +34,7 @@ function TabButton({
       className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-offset-2"
       style={
         active
-          ? { background: 'var(--color-primary)', color: '#fff', boxShadow: '0 2px 8px rgba(59,107,124,0.3)' }
+          ? { background: 'var(--color-primary)', color: '#fff', boxShadow: '0 2px 8px rgba(76,100,85,)' }
           : { color: 'var(--color-text-muted)', background: 'transparent' }
       }
     >
@@ -236,21 +236,21 @@ export default function HomePage() {
 
   /* ══ RENDER ══════════════════════════════════════ */
   return (
-    <main className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg, #EFF3F7 0%, #E4EEF5 100%)' }}>
+    <main className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
 
       {/* ── Header ─────────────────────────────── */}
-      <header style={{ background: 'linear-gradient(135deg, #243B55 0%, #2C5F72 100%)' }}>
+      <header style={{ background: 'var(--color-surface)' }}>
         <div className="max-w-3xl mx-auto px-6 py-7">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}>
+              style={{ background: 'var(--color-primary-light)' }}>
               🎯
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight leading-tight">
+              <h1 className="text-xl font-bold tracking-tight leading-tight" style={{ color: 'var(--color-text)' }}>
                 Smart Step Learning Assistant
               </h1>
-              <p className="text-sm mt-0.5" style={{ color: '#A8C9D8' }}>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-subtle)' }}>
                 Ubah materi panjang menjadi langkah belajar yang mudah dipahami
               </p>
             </div>
@@ -261,7 +261,7 @@ export default function HomePage() {
       {/* ── Main card ──────────────────────────── */}
       <section className="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'var(--color-surface)', boxShadow: '0 4px 32px rgba(36,59,85,0.10)' }}>
+          style={{ background: 'var(--color-surface)', boxShadow: '0 4px 32px rgba(76,100,85,)' }}>
 
           {/* Card header */}
           <div className="px-6 pt-6 pb-0">
@@ -408,7 +408,7 @@ export default function HomePage() {
                         <img src={imagePreview} alt="Preview gambar yang diunggah" className="w-full object-contain max-h-52" />
                         {isExtracting && (
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-                            style={{ background: 'rgba(36,59,85,0.6)', color: '#fff' }}>
+                            style={{ background: 'rgba(76,100,85,)', color: '#fff' }}>
                             <Spinner size={28} />
                             <span className="text-sm font-medium">Membaca teks dari gambar…</span>
                           </div>
@@ -485,9 +485,9 @@ export default function HomePage() {
               style={
                 canProcess
                   ? {
-                      background: 'linear-gradient(135deg, var(--color-primary) 0%, #2C5F72 100%)',
+                      background: 'var(--color-primary)',
                       color: '#fff',
-                      boxShadow: '0 4px 16px rgba(59,107,124,0.35)',
+                      boxShadow: '0 4px 16px rgba(76,100,85,)',
                       cursor: 'pointer',
                     }
                   : {
@@ -527,7 +527,7 @@ export default function HomePage() {
 
         {/* ── Tip box ──────────────────────────── */}
         <div className="mt-4 px-5 py-4 rounded-xl text-sm"
-          style={{ background: 'rgba(59,107,124,0.07)', border: '1px solid var(--color-primary-muted)' }}>
+          style={{ background: 'rgba(76,100,85,)', border: '1px solid var(--color-primary-muted)' }}>
           <p className="font-medium mb-1" style={{ color: 'var(--color-primary)' }}>💡 Tips penggunaan</p>
           <ul className="space-y-1 text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
             <li>• Materi yang lebih panjang menghasilkan langkah belajar yang lebih lengkap</li>

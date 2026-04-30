@@ -34,30 +34,30 @@ export default function HistoryPage() {
     setConfirmClear(false)
   }
 
-  if (!mounted) return <div className="min-h-screen bg-[#EFF3F7]" />
+  if (!mounted) return <div className="min-h-screen bg-[var(--color-bg)]" />
 
   return (
-    <main className="min-h-screen py-10 px-4" style={{ background: '#EFF3F7' }}>
+    <main className="min-h-screen py-10 px-4" style={{ background: 'var(--color-bg)' }}>
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <button onClick={() => router.back()} className="text-sm text-[#536878] hover:text-[#1C2B3A] transition-colors mb-1">
+            <button onClick={() => router.back()} className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors mb-1">
               ← Kembali
             </button>
-            <h1 className="text-2xl font-bold text-[#1C2B3A]">Riwayat Belajar</h1>
-            <p className="text-sm text-[#536878]">{sessions.length} sesi tersimpan</p>
+            <h1 className="text-2xl font-bold text-[var(--color-text)]">Riwayat Belajar</h1>
+            <p className="text-sm text-[var(--color-text-muted)]">{sessions.length} sesi tersimpan</p>
           </div>
 
           {sessions.length > 0 && (
             confirmClear ? (
               <div className="flex gap-2">
-                <button onClick={() => setConfirmClear(false)} className="text-sm px-4 py-2 rounded-lg border border-[#CCDAE4] text-[#536878] bg-white hover:bg-[#F7FAFB]">Batal</button>
-                <button onClick={handleClearAll} className="text-sm px-4 py-2 rounded-lg text-white bg-[#C47E2A] hover:opacity-90">Hapus Semua</button>
+                <button onClick={() => setConfirmClear(false)} className="text-sm px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] bg-white hover:bg-[var(--color-surface-2)]">Batal</button>
+                <button onClick={handleClearAll} className="text-sm px-4 py-2 rounded-lg text-white bg-[var(--color-amber)] hover:opacity-90">Hapus Semua</button>
               </div>
             ) : (
-              <button onClick={() => setConfirmClear(true)} className="text-sm px-4 py-2 rounded-lg border border-[#CCDAE4] text-[#8DA4B4] bg-white hover:border-[#C47E2A] hover:text-[#C47E2A] transition-colors">
+              <button onClick={() => setConfirmClear(true)} className="text-sm px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-subtle)] bg-white hover:border-[var(--color-amber)] hover:text-[var(--color-amber)] transition-colors">
                 Hapus Semua
               </button>
             )
@@ -68,9 +68,9 @@ export default function HistoryPage() {
         {sessions.length === 0 && (
           <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
             <div className="text-6xl mb-4">📚</div>
-            <h2 className="text-lg font-bold text-[#1C2B3A] mb-2">Belum Ada Riwayat</h2>
-            <p className="text-sm text-[#536878] mb-6">Selesaikan sesi belajar pertamamu untuk mulai membangun riwayatmu!</p>
-            <button onClick={() => router.push('/')} className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90" style={{ background: '#3B6B7C' }}>
+            <h2 className="text-lg font-bold text-[var(--color-text)] mb-2">Belum Ada Riwayat</h2>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Selesaikan sesi belajar pertamamu untuk mulai membangun riwayatmu!</p>
+            <button onClick={() => router.push('/')} className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90" style={{ background: 'var(--color-primary)' }}>
               Mulai Belajar ✨
             </button>
           </div>
@@ -87,18 +87,18 @@ export default function HistoryPage() {
                 <div className="text-3xl shrink-0">{emoji}</div>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#1C2B3A] truncate">{s.topic}</p>
-                  <p className="text-xs text-[#8DA4B4] mt-0.5">{formatDate(s.date)}</p>
+                  <p className="font-semibold text-[var(--color-text)] truncate">{s.topic}</p>
+                  <p className="text-xs text-[var(--color-text-subtle)] mt-0.5">{formatDate(s.date)}</p>
                   
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="text-sm font-bold text-[#3B6B7C]">{s.score}%</span>
-                    <span className="text-xs text-[#8DA4B4]">·</span>
-                    <span className="text-xs text-[#536878]">{s.totalSteps} langkah</span>
-                    <span className="text-xs text-[#8DA4B4]">·</span>
+                    <span className="text-sm font-bold text-[var(--color-primary)]">{s.score}%</span>
+                    <span className="text-xs text-[var(--color-text-subtle)]">·</span>
+                    <span className="text-xs text-[var(--color-text-muted)]">{s.totalSteps} langkah</span>
+                    <span className="text-xs text-[var(--color-text-subtle)]">·</span>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       isPass 
-                        ? 'bg-[#E6F4EA] text-[#3A8C6E]' 
-                        : 'bg-[#FFF9E6] text-[#C47E2A]'
+                        ? 'bg-[var(--color-green-bg)] text-[var(--color-green)]' 
+                        : 'bg-[var(--color-amber-bg)] text-[var(--color-amber)]'
                     }`}>
                       {isPass ? 'Lulus' : 'Perlu Review'}
                     </span>
@@ -107,7 +107,7 @@ export default function HistoryPage() {
 
                 <button 
                   onClick={() => handleDelete(s.id)}
-                  className="shrink-0 text-[#CCDAE4] hover:text-[#C47E2A] transition-colors p-2 rounded-lg hover:bg-[#FFF9E6]"
+                  className="shrink-0 text-[var(--color-border)] hover:text-[var(--color-amber)] transition-colors p-2 rounded-lg hover:bg-[var(--color-amber-bg)]"
                   title="Hapus sesi ini"
                 >
                   🗑️
@@ -119,7 +119,7 @@ export default function HistoryPage() {
 
         {sessions.length > 0 && (
           <div className="mt-6 text-center">
-            <button onClick={() => router.push('/')} className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90" style={{ background: '#3B6B7C' }}>
+            <button onClick={() => router.push('/')} className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90" style={{ background: 'var(--color-primary)' }}>
               Input Materi Baru ✨
             </button>
           </div>
