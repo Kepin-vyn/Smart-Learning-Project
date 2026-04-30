@@ -1,5 +1,30 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { MicroStep, ProcessResult } from './types'
+import type { MicroStep, ProcessResult, QuizResult } from './types'
+
+// Simple hash for caching
+function hashText(str: string): string {
+  let h = 0
+  for (let i = 0; i < str.length; i++) { h = (Math.imul(31, h) + str.charCodeAt(i)) | 0 }
+  return `ssl_cache_${Math.abs(h)}`
+}
+
+const CACHE_TTL = 1000 * 60 * 60 * 24 // 24 hours
+
+function getCache<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const { value, expires } = JSON.parse(raw)
+    if (Date.now() > expires) { localStorage.removeItem(key); return null }
+    return value as T
+  } catch { return null }
+}
+
+function setCache<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem(key, JSON.stringify({ value, expires: Date.now() + CACHE_TTL })) } catch {}
+}
 
 function getClient() {
   const key = process.env.GEMINI_API_KEY
@@ -12,7 +37,7 @@ export async function extractTextFromImage(
   mimeType: string
 ): Promise<string> {
   const genAI = getClient()
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
 
   const result = await model.generateContent([
     {
@@ -29,8 +54,16 @@ Jika tidak ada teks yang bisa dibaca, balas dengan tepat: TIDAK_ADA_TEKS`,
 }
 
 export async function processContentToSteps(text: string): Promise<ProcessResult> {
+  // Check cache first — avoid unnecessary API calls
+  const cacheKey = hashText(text.trim())
+  const cached = getCache<ProcessResult>(cacheKey)
+  if (cached) {
+    console.log('[SmartStep] Cache hit — skipping API call')
+    return cached
+  }
+
   const genAI = getClient()
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
 
   const prompt = `Kamu adalah asisten pembelajaran yang membantu pengguna dengan ADHD, disleksia, dan autisme belajar lebih mudah.
 
@@ -68,16 +101,29 @@ ${text}`
   const jsonStr = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim()
 
   const parsed = JSON.parse(jsonStr)
-  return {
+  const result: ProcessResult = {
     steps: parsed.steps as MicroStep[],
     totalSteps: parsed.steps.length,
     language: parsed.language ?? 'id',
   }
+
+  // Save to cache
+  setCache(cacheKey, result)
+
+  return result
 }
 
 export async function generateQuizFromSteps(steps: MicroStep[], language: string, difficulty: 'easy' | 'normal' | 'hard' = 'normal'): Promise<QuizResult> {
+  // Cache quiz per steps hash + difficulty
+  const stepsHash = hashText(steps.map(s => s.id).join(',') + difficulty)
+  const cachedQuiz = getCache<QuizResult>(stepsHash)
+  if (cachedQuiz) {
+    console.log('[SmartStep] Quiz cache hit')
+    return cachedQuiz
+  }
+
   const genAI = getClient()
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
 
   const contentSummary = steps.map(s => `[${s.title}]: ${s.content}`).join('\n')
   const isEn = language === 'en'
@@ -123,5 +169,7 @@ ${contentSummary}`
   const raw = result.response.text().trim()
   const jsonStr = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim()
 
-  return JSON.parse(jsonStr) as QuizResult
+  const quizResult = JSON.parse(jsonStr) as QuizResult
+  setCache(stepsHash, quizResult)
+  return quizResult
 }
