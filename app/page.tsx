@@ -222,7 +222,7 @@ export default function HomePage() {
       const data = await res.json()
       if (data.ok && data.steps) {
         setResult(data)
-        router.push('/learn')
+        router.push('/steps')
       } else {
         showNotice('warning', data.message ?? 'Materi belum bisa diproses. Coba lagi dalam beberapa saat.')
       }
