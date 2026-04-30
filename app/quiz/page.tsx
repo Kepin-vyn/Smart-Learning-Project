@@ -3,10 +3,18 @@
 import { useRouter } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
 import { useEffect, useState, useCallback } from 'react'
+import { saveSession } from '@/lib/sessions'
+import type { SessionRecord } from '@/lib/types'
 
 interface ShuffledOption {
   text: string
   originalIndex: number
+}
+
+interface MissedQuestion {
+  question: string
+  correctAnswer: string
+  explanation: string
 }
 
 export default function QuizPage() {
@@ -17,6 +25,7 @@ export default function QuizPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
+  const [missedQuestions, setMissedQuestions] = useState<MissedQuestion[]>([])
   
   // Quiz state for the current question
   const [shuffledOptions, setShuffledOptions] = useState<ShuffledOption[]>([])
@@ -43,14 +52,15 @@ export default function QuizPage() {
       })
       const data = await res.json()
       if (data.ok && data.questions) {
-        // Shuffle questions
         const shuffledQuestions = [...data.questions].sort(() => Math.random() - 0.5)
         setQuizResult({ questions: shuffledQuestions })
+        setCurrentQuestionIndex(0)
+        setCorrectAnswers(0)
+        setMissedQuestions([])
       } else {
-        // Fallback if failed to generate (avoid "error" wording)
         setFeedback({ type: 'warning', message: 'Kuis belum siap, mari coba lagi sebentar.' })
       }
-    } catch (err) {
+    } catch {
       setFeedback({ type: 'warning', message: 'Kuis belum siap, mari coba lagi sebentar.' })
     } finally {
       setIsGenerating(false)
@@ -67,7 +77,6 @@ export default function QuizPage() {
   useEffect(() => {
     if (quizResult?.questions && quizResult.questions[currentQuestionIndex]) {
       const q = quizResult.questions[currentQuestionIndex]
-      // Shuffle options and keep track of their original indices
       const optionsWithIndices = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }))
       const shuffled = [...optionsWithIndices].sort(() => Math.random() - 0.5)
       
@@ -76,20 +85,34 @@ export default function QuizPage() {
       setFeedback({ type: null, message: '' })
       setIsRevealed(false)
       setShowExplanation(false)
-    } else if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length) {
-      // Quiz Finished, calculate score
+    } else if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length && quizResult.questions.length > 0) {
+      // Quiz Finished — save session and redirect
       const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
       setLatestScore(score)
 
-      if (score < 60) {
-        setDifficulty('easy')
-      } else if (score >= 80) {
-        setDifficulty('hard')
-      } else {
-        setDifficulty('normal')
+      const newDifficulty = score < 60 ? 'easy' : score >= 80 ? 'hard' : 'normal'
+      setDifficulty(newDifficulty)
+
+      // Build session record
+      const topic = result?.steps?.[0]?.title ?? 'Materi tanpa judul'
+      const session: SessionRecord = {
+        id: `session_${Date.now()}`,
+        date: new Date().toISOString(),
+        topic,
+        score,
+        totalSteps: result?.totalSteps ?? result?.steps?.length ?? 0,
+        difficulty,
+        missedQuestions,
+        status: score >= 60 ? 'lulus' : 'perlu-review'
       }
+      saveSession(session)
+
+      // Store session ID for summary page
+      localStorage.setItem('smartstep_last_session', JSON.stringify(session))
+
+      router.push('/summary')
     }
-  }, [quizResult, currentQuestionIndex, correctAnswers, setLatestScore, setDifficulty])
+  }, [quizResult, currentQuestionIndex, correctAnswers, missedQuestions, setLatestScore, setDifficulty, result, difficulty, router])
 
   if (!mounted) return <div className="min-h-screen bg-[#EFF3F7]" />
 
@@ -124,75 +147,10 @@ export default function QuizPage() {
   const isFinished = currentQuestionIndex >= quizResult.questions.length
 
   if (isFinished) {
-    const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
-    
-    let heading = "Kerja Bagus!"
-    let msg = "Kamu telah menyelesaikan kuis ini."
-    let actionBtn = null
-
-    if (score < 60) {
-      heading = "Ayo Coba Lagi! 💪"
-      msg = "Tidak apa-apa jika belum sempurna. Mari kita pelajari ulang materinya dan coba kuis yang sedikit lebih mudah!"
-      actionBtn = (
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => router.push('/steps')}
-            className="px-6 py-3 w-full rounded-xl font-semibold text-[#3B6B7C] border-2 border-[#3B6B7C] transition-all hover:bg-[#F7FAFB]"
-          >
-            Pelajari Ulang Materi
-          </button>
-          <button
-            onClick={() => {
-              setCurrentQuestionIndex(0)
-              setCorrectAnswers(0)
-              setQuizResult({ questions: [] })
-              generateQuiz('easy')
-            }}
-            className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-            style={{ background: '#C47E2A' }}
-          >
-            Coba Kuis Ulang (Lebih Mudah)
-          </button>
-        </div>
-      )
-    } else if (score >= 80) {
-      heading = "Luar Biasa! 🌟"
-      msg = `Skor kamu ${score}%. Kamu sudah sangat paham! Di sesi berikutnya, soal akan sedikit lebih menantang.`
-      actionBtn = (
-        <button
-          onClick={() => router.push('/')}
-          className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-          style={{ background: '#3A8C6E' }}
-        >
-          Selesai & Pelajari Topik Baru ✨
-        </button>
-      )
-    } else {
-      heading = "Bagus Sekali! 👍"
-      msg = `Skor kamu ${score}%. Ada beberapa bagian yang bisa dipelajari lagi, tapi kamu sudah paham intinya.`
-      actionBtn = (
-        <button
-          onClick={() => router.push('/')}
-          className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-          style={{ background: '#3A8C6E' }}
-        >
-          Selesai & Pelajari Topik Baru ✨
-        </button>
-      )
-    }
-
     return (
-      <main className="h-screen flex flex-col items-center justify-center p-6" style={{ background: '#EFF3F7' }}>
-         <div className="bg-white rounded-2xl p-10 w-full max-w-md shadow-sm text-center anim-fade-up">
-          <div className="text-6xl mb-6">{score >= 80 ? '🏆' : (score < 60 ? '🌱' : '⭐')}</div>
-          <h1 className="text-2xl font-bold text-[#1C2B3A] mb-3">
-            {heading}
-          </h1>
-          <p className="text-[#536878] text-base mb-8 leading-relaxed">
-            {msg}
-          </p>
-          {actionBtn}
-        </div>
+      <main className="h-screen flex flex-col items-center justify-center" style={{ background: '#EFF3F7' }}>
+        <div className="animate-spin text-4xl mb-4">⏳</div>
+        <h2 className="text-[#1C2B3A] font-medium text-lg">Menyiapkan ringkasan sesimu...</h2>
       </main>
     )
   }
@@ -213,6 +171,12 @@ export default function QuizPage() {
         setFeedback({ type: 'warning', message: 'Mari kita pelajari bersama jawaban yang paling tepat.' })
         setIsRevealed(true)
         setShowExplanation(true)
+        // Track this as a missed question
+        setMissedQuestions(prev => [...prev, {
+          question: question.question,
+          correctAnswer: question.options[question.correctIndex],
+          explanation: question.explanation
+        }])
       } else {
         setFeedback({ type: 'warning', message: `Hampir! Coba lagi. Petunjuk: ${question.hint}` })
       }
@@ -304,7 +268,7 @@ export default function QuizPage() {
             </div>
           )}
 
-          {/* Next Button (Only visible after reveal) */}
+          {/* Next Button */}
           {showExplanation && (
             <div className="mt-8 flex justify-end anim-fade-up">
               <button
@@ -312,7 +276,7 @@ export default function QuizPage() {
                 className="px-8 py-3.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
                 style={{ background: '#3B6B7C' }}
               >
-                {currentQuestionIndex === quizResult.questions.length - 1 ? 'Selesai ✨' : 'Soal Selanjutnya →'}
+                {currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan ✨' : 'Soal Selanjutnya →'}
               </button>
             </div>
           )}

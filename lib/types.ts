@@ -33,3 +33,14 @@ export interface QuizResult {
   difficulty?: DifficultyLevel
 }
 
+export interface SessionRecord {
+  id: string
+  date: string // ISO 8601
+  topic: string // first few words of the input material
+  score: number // 0-100
+  totalSteps: number
+  difficulty: DifficultyLevel
+  missedQuestions: Array<{ question: string; correctAnswer: string; explanation: string }>
+  status: 'lulus' | 'perlu-review'
+}
+
