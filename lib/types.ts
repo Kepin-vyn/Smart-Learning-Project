@@ -17,6 +17,8 @@ export interface ApiResponse<T> {
   ok: boolean
 }
 
+export type DifficultyLevel = 'easy' | 'normal' | 'hard'
+
 export interface QuizQuestion {
   id: string
   question: string
@@ -28,5 +30,6 @@ export interface QuizQuestion {
 
 export interface QuizResult {
   questions: QuizQuestion[]
+  difficulty?: DifficultyLevel
 }
 

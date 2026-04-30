@@ -4,7 +4,7 @@ import { generateQuizFromSteps } from '@/lib/gemini'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { steps, language } = body
+    const { steps, language, difficulty } = body
 
     if (!steps || !Array.isArray(steps) || steps.length === 0) {
       return NextResponse.json(
@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const quizResult = await generateQuizFromSteps(steps, language ?? 'id')
-    return NextResponse.json({ ok: true, ...quizResult })
+    const quizResult = await generateQuizFromSteps(steps, language ?? 'id', difficulty ?? 'normal')
+    return NextResponse.json({ ok: true, ...quizResult, difficulty })
   } catch (err) {
     console.error('Quiz Generation Error:', err)
     return NextResponse.json(

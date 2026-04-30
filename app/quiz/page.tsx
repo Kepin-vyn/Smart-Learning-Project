@@ -11,11 +11,12 @@ interface ShuffledOption {
 
 export default function QuizPage() {
   const router = useRouter()
-  const { result, quizResult, setQuizResult } = useLearningStore()
+  const { result, quizResult, setQuizResult, difficulty, setDifficulty, setLatestScore } = useLearningStore()
   
   const [mounted, setMounted] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [correctAnswers, setCorrectAnswers] = useState(0)
   
   // Quiz state for the current question
   const [shuffledOptions, setShuffledOptions] = useState<ShuffledOption[]>([])
@@ -29,14 +30,16 @@ export default function QuizPage() {
     setMounted(true)
   }, [])
 
-  const generateQuiz = useCallback(async () => {
+  const generateQuiz = useCallback(async (forcedDifficulty?: 'easy' | 'normal' | 'hard') => {
     if (!result?.steps) return
     setIsGenerating(true)
+    const targetDifficulty = forcedDifficulty || difficulty
+
     try {
       const res = await fetch('/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: result.steps, language: result.language })
+        body: JSON.stringify({ steps: result.steps, language: result.language, difficulty: targetDifficulty })
       })
       const data = await res.json()
       if (data.ok && data.questions) {
@@ -52,7 +55,7 @@ export default function QuizPage() {
     } finally {
       setIsGenerating(false)
     }
-  }, [result, setQuizResult])
+  }, [result, setQuizResult, difficulty])
 
   useEffect(() => {
     if (mounted && result?.steps && !quizResult && !isGenerating) {
@@ -73,8 +76,20 @@ export default function QuizPage() {
       setFeedback({ type: null, message: '' })
       setIsRevealed(false)
       setShowExplanation(false)
+    } else if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length) {
+      // Quiz Finished, calculate score
+      const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
+      setLatestScore(score)
+
+      if (score < 60) {
+        setDifficulty('easy')
+      } else if (score >= 80) {
+        setDifficulty('hard')
+      } else {
+        setDifficulty('normal')
+      }
     }
-  }, [quizResult, currentQuestionIndex])
+  }, [quizResult, currentQuestionIndex, correctAnswers, setLatestScore, setDifficulty])
 
   if (!mounted) return <div className="min-h-screen bg-[#EFF3F7]" />
 
@@ -109,23 +124,74 @@ export default function QuizPage() {
   const isFinished = currentQuestionIndex >= quizResult.questions.length
 
   if (isFinished) {
+    const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
+    
+    let heading = "Kerja Bagus!"
+    let msg = "Kamu telah menyelesaikan kuis ini."
+    let actionBtn = null
+
+    if (score < 60) {
+      heading = "Ayo Coba Lagi! 💪"
+      msg = "Tidak apa-apa jika belum sempurna. Mari kita pelajari ulang materinya dan coba kuis yang sedikit lebih mudah!"
+      actionBtn = (
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => router.push('/steps')}
+            className="px-6 py-3 w-full rounded-xl font-semibold text-[#3B6B7C] border-2 border-[#3B6B7C] transition-all hover:bg-[#F7FAFB]"
+          >
+            Pelajari Ulang Materi
+          </button>
+          <button
+            onClick={() => {
+              setCurrentQuestionIndex(0)
+              setCorrectAnswers(0)
+              setQuizResult({ questions: [] })
+              generateQuiz('easy')
+            }}
+            className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
+            style={{ background: '#C47E2A' }}
+          >
+            Coba Kuis Ulang (Lebih Mudah)
+          </button>
+        </div>
+      )
+    } else if (score >= 80) {
+      heading = "Luar Biasa! 🌟"
+      msg = `Skor kamu ${score}%. Kamu sudah sangat paham! Di sesi berikutnya, soal akan sedikit lebih menantang.`
+      actionBtn = (
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
+          style={{ background: '#3A8C6E' }}
+        >
+          Selesai & Pelajari Topik Baru ✨
+        </button>
+      )
+    } else {
+      heading = "Bagus Sekali! 👍"
+      msg = `Skor kamu ${score}%. Ada beberapa bagian yang bisa dipelajari lagi, tapi kamu sudah paham intinya.`
+      actionBtn = (
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
+          style={{ background: '#3A8C6E' }}
+        >
+          Selesai & Pelajari Topik Baru ✨
+        </button>
+      )
+    }
+
     return (
       <main className="h-screen flex flex-col items-center justify-center p-6" style={{ background: '#EFF3F7' }}>
          <div className="bg-white rounded-2xl p-10 w-full max-w-md shadow-sm text-center anim-fade-up">
-          <div className="text-6xl mb-6">🎉</div>
+          <div className="text-6xl mb-6">{score >= 80 ? '🏆' : (score < 60 ? '🌱' : '⭐')}</div>
           <h1 className="text-2xl font-bold text-[#1C2B3A] mb-3">
-            Sesi Selesai!
+            {heading}
           </h1>
-          <p className="text-[#536878] text-base mb-8">
-            Hebat! Kamu telah menyelesaikan materi dan kuis dengan baik.
+          <p className="text-[#536878] text-base mb-8 leading-relaxed">
+            {msg}
           </p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-3 w-full rounded-xl font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-            style={{ background: '#3A8C6E' }}
-          >
-            Pelajari Materi Baru ✨
-          </button>
+          {actionBtn}
         </div>
       </main>
     )
@@ -138,6 +204,7 @@ export default function QuizPage() {
       setFeedback({ type: 'success', message: 'Luar biasa! Jawabanmu tepat.' })
       setIsRevealed(true)
       setShowExplanation(true)
+      if (retryCount === 0) setCorrectAnswers(prev => prev + 1)
     } else {
       const newRetry = retryCount + 1
       setRetryCount(newRetry)

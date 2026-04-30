@@ -75,12 +75,21 @@ ${text}`
   }
 }
 
-export async function generateQuizFromSteps(steps: MicroStep[], language: string): Promise<QuizResult> {
+export async function generateQuizFromSteps(steps: MicroStep[], language: string, difficulty: 'easy' | 'normal' | 'hard' = 'normal'): Promise<QuizResult> {
   const genAI = getClient()
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const contentSummary = steps.map(s => `[${s.title}]: ${s.content}`).join('\n')
   const isEn = language === 'en'
+
+  let difficultyInstruction = ""
+  if (difficulty === 'easy') {
+    difficultyInstruction = "Buat soal yang SANGAT MUDAH dan sangat jelas (faktual sederhana), agar tidak membuat siswa frustrasi."
+  } else if (difficulty === 'hard') {
+    difficultyInstruction = "Buat soal yang CUKUP MENANTANG (perlu analisis sedikit), namun tetap bersumber dari teks."
+  } else {
+    difficultyInstruction = "Buat soal dengan tingkat kesulitan STANDAR."
+  }
 
   const prompt = `Kamu adalah asisten pembelajaran. Berdasarkan ringkasan materi berikut, buatlah 3 hingga 5 soal pilihan ganda.
   
@@ -91,6 +100,7 @@ ATURAN WAJIB:
 4. Berikan 'explanation' (penjelasan) mengapa jawaban tersebut benar.
 5. Gunakan bahasa ${isEn ? 'Inggris' : 'Indonesia'}.
 6. Kembalikan HANYA JSON valid.
+7. ${difficultyInstruction}
 
 Format JSON:
 {
