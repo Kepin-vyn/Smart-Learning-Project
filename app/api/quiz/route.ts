@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateQuizFromSteps } from '@/lib/gemini'
+import { generateQuizFromSteps } from '@/lib/groq'
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('Quiz Generation Error:', err)
     return NextResponse.json(
-      { ok: false, message: 'Gagal membuat kuis. Coba lagi nanti.' },
+      { ok: false, message: 'Kuis belum bisa dibuat. Coba lagi nanti.' },
       { status: 500 }
     )
   }

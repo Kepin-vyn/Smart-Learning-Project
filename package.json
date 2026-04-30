@@ -12,6 +12,7 @@
     "@google/generative-ai": "^0.24.1",
     "@types/pdf-parse": "^1.1.5",
     "framer-motion": "^12.38.0",
+    "groq-sdk": "^1.1.2",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
     "pdf-parse": "^2.4.5",
