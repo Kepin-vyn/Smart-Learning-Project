@@ -94,8 +94,8 @@ Format JSON:
 Materi:
 ${text}`
 
-  const result = await model.generateContent(prompt)
-  const raw = result.response.text().trim()
+  const aiResult = await model.generateContent(prompt)
+  const raw = aiResult.response.text().trim()
 
   // Strip markdown code fences if present
   const jsonStr = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim()
