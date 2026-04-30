@@ -85,16 +85,23 @@ export default function QuizPage() {
       setFeedback({ type: null, message: '' })
       setIsRevealed(false)
       setShowExplanation(false)
-    } else if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length && quizResult.questions.length > 0) {
-      // Quiz Finished — save session and redirect
+    }
+  }, [quizResult, currentQuestionIndex])
+
+  // Handle Quiz Finished
+  useEffect(() => {
+    if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length && quizResult.questions.length > 0) {
       const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
       setLatestScore(score)
 
       const newDifficulty = score < 60 ? 'easy' : score >= 80 ? 'hard' : 'normal'
       setDifficulty(newDifficulty)
 
-      // Build session record
       const topic = result?.steps?.[0]?.title ?? 'Materi tanpa judul'
+      
+      // Deduplicate missed questions
+      const uniqueMissed = Array.from(new Map(missedQuestions.map(item => [item.question, item])).values())
+
       const session: SessionRecord = {
         id: `session_${Date.now()}`,
         date: new Date().toISOString(),
@@ -102,14 +109,12 @@ export default function QuizPage() {
         score,
         totalSteps: result?.totalSteps ?? result?.steps?.length ?? 0,
         difficulty,
-        missedQuestions,
+        missedQuestions: uniqueMissed,
         status: score >= 60 ? 'lulus' : 'perlu-review'
       }
       saveSession(session)
 
-      // Store session ID for summary page
       localStorage.setItem('smartstep_last_session', JSON.stringify(session))
-
       router.push('/summary')
     }
   }, [quizResult, currentQuestionIndex, correctAnswers, missedQuestions, setLatestScore, setDifficulty, result, difficulty, router])

@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, text })
-  } catch {
+  } catch (err) {
+    console.error('PDF Extraction Error:', err)
     return NextResponse.json({
       ok: false,
       message: 'PDF tidak dapat dibaca saat ini. Coba unggah file lain atau masukkan teks secara manual.',
