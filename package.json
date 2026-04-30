@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@types/pdf-parse": "^1.1.5",
     "framer-motion": "^12.38.0",
     "groq-sdk": "^1.1.2",

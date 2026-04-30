@@ -144,3 +144,28 @@ ${contentSummary}`
   setCache(stepsHash, quizResult)
   return quizResult
 }
+
+export async function extractTextFromImage(
+  base64Data: string,
+  mimeType: string
+): Promise<string> {
+  const groq = getClient()
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.2-11b-vision-preview',
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Ekstrak semua teks yang ada dalam gambar ini. Kembalikan HANYA teks tersebut tanpa format tambahan atau komentar apapun.' },
+          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } }
+        ]
+      }
+    ],
+    temperature: 0.1,
+    max_tokens: 1024,
+  })
+
+  return completion.choices[0]?.message?.content ?? ''
+}
+

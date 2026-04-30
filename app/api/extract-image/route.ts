@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { extractTextFromImage } from '@/lib/gemini'
+import { extractTextFromImage } from '@/lib/groq'
 
 export async function POST(req: NextRequest) {
   try {
