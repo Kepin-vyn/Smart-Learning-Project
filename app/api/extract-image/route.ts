@@ -31,10 +31,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, text })
-  } catch {
+  } catch (err) {
+    console.error('Image Extraction Error:', err)
     return NextResponse.json({
       ok: false,
-      message: 'Gambar tidak dapat diproses saat ini. Pastikan GEMINI_API_KEY sudah diatur di .env.local.',
+      message: 'Gambar tidak dapat diproses saat ini. Pastikan GROQ_API_KEY valid dan model vision tersedia.',
     }, { status: 500 })
   }
 }
