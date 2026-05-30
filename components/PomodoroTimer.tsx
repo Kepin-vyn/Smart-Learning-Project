@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
+import { motion } from 'framer-motion'
 
 export default function PomodoroTimer() {
   const {
@@ -22,6 +23,25 @@ export default function PomodoroTimer() {
   const [localStudy, setLocalStudy] = useState(studyDurationMinutes)
   const [localBreak, setLocalBreak] = useState(breakDurationMinutes)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Drag bounds for floating widget
+  const [dragBounds, setDragBounds] = useState({ left: 0, right: 0, top: 0, bottom: 0 })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const updateBounds = () => {
+        setDragBounds({
+          left: -window.innerWidth + 320,
+          right: 20,
+          top: -window.innerHeight + 140,
+          bottom: 20
+        })
+      }
+      updateBounds()
+      window.addEventListener('resize', updateBounds)
+      return () => window.removeEventListener('resize', updateBounds)
+    }
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -58,9 +78,6 @@ export default function PomodoroTimer() {
     setShowSettings(false)
   }
 
-  // Hide on home page
-  if (pathname === '/') return null
-
   // Break overlay
   if (pomodoroMode === 'break' && isPomodoroRunning) {
     return (
@@ -93,11 +110,23 @@ export default function PomodoroTimer() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <motion.div
+      drag
+      dragElastic={0.12} // Smooth rubber-band elasticity on boundaries
+      dragMomentum={true} // satisfying gliding momentum physics
+      dragTransition={{ power: 0.12, timeConstant: 180 }} // Gentle friction so it glides and stops smoothly
+      whileHover={{ scale: 1.03, zIndex: 50 }}
+      whileTap={{ scale: 0.97, cursor: 'grabbing' }}
+      dragConstraints={dragBounds}
+      transition={{ type: 'spring', stiffness: 260, damping: 26 }} // Organic spring physics
+      className="fixed bottom-20 md:bottom-6 right-6 z-40 flex flex-col items-end select-none cursor-grab"
+    >
       {/* Settings panel */}
       {showSettings && (
-        <div className="mb-3 p-5 rounded-[1.5rem] border shadow-lifted anim-fade-up"
-          style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-outline-variant)' }}>
+        <div className="mb-3 p-5 rounded-[1.5rem] border shadow-lifted anim-fade-up cursor-default"
+          style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-outline-variant)' }}
+          onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when setting durations
+        >
           <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-text-subtle)' }}>Atur Timer</p>
           <div className="flex flex-col gap-3">
             {[
@@ -122,56 +151,64 @@ export default function PomodoroTimer() {
       )}
 
       {/* Widget */}
-      <div className="flex items-center gap-4 p-4 rounded-[1.5rem] border shadow-lifted"
+      <div className="flex items-center gap-2 md:gap-3 p-3 md:p-3.5 rounded-2xl md:rounded-[1.5rem] border shadow-lifted"
         style={{
           background: 'rgba(255,255,255,0.92)',
           backdropFilter: 'blur(12px)',
           borderColor: 'var(--color-outline-variant)',
         }}>
+        
+        {/* Gripper indicator for drag handle feedback */}
+        <div className="flex items-center text-slate-300">
+          <span className="material-symbols-outlined text-lg">drag_indicator</span>
+        </div>
+
         {/* Timer icon & display */}
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+        <div className="w-10 h-10 md:w-11 md:h-11 rounded-lg md:rounded-xl flex items-center justify-center shrink-0"
           style={{ background: isPomodoroRunning ? 'var(--color-primary-fixed)' : 'var(--color-surface-container)' }}>
-          <span className="material-symbols-outlined text-2xl"
+          <span className="material-symbols-outlined text-xl md:text-2xl"
             style={{ color: isPomodoroRunning ? 'var(--color-primary)' : 'var(--color-text-subtle)' }}>
             {isPomodoroRunning ? 'timer' : 'timer_off'}
           </span>
         </div>
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-widest leading-none mb-1"
+          <div className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest leading-none mb-1"
             style={{ color: 'var(--color-outline)' }}>
-            {pomodoroMode === 'idle' ? 'Focus Time' : pomodoroMode === 'study' ? 'Sedang Belajar' : 'Istirahat'}
+            {pomodoroMode === 'idle' ? 'Focus' : pomodoroMode === 'study' ? 'Belajar' : 'Istirahat'}
           </div>
-          <div className="text-2xl font-bold tabular-nums leading-none"
+          <div className="text-xl md:text-2xl font-bold tabular-nums leading-none"
             style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-on-surface)' }}>
             {timeLeftStr}
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col gap-1.5 ml-1">
+        <div className="flex flex-col gap-1 ml-0.5"
+          onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when clicking buttons
+        >
           {!isPomodoroRunning ? (
             <button onClick={() => startPomodoro('study')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all"
+              className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all cursor-pointer"
               style={{ background: 'var(--color-primary)', color: 'white' }}
               title="Mulai Belajar">
-              <span className="material-symbols-outlined text-lg filled">play_arrow</span>
+              <span className="material-symbols-outlined text-base md:text-lg filled">play_arrow</span>
             </button>
           ) : (
             <button onClick={stopPomodoro}
-              className="w-9 h-9 rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all"
+              className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all cursor-pointer"
               style={{ background: 'var(--color-amber)', color: 'white' }}
               title="Hentikan Timer">
-              <span className="material-symbols-outlined text-lg">stop</span>
+              <span className="material-symbols-outlined text-base md:text-lg">stop</span>
             </button>
           )}
           <button onClick={() => setShowSettings(!showSettings)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center transition-colors cursor-pointer"
             style={{ background: 'var(--color-surface-container)', color: 'var(--color-text-subtle)' }}
             title="Pengaturan Timer">
-            <span className="material-symbols-outlined text-lg">settings</span>
+            <span className="material-symbols-outlined text-base md:text-lg">settings</span>
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

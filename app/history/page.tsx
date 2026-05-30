@@ -130,17 +130,17 @@ export default function HistoryPage() {
 
         {/* Empty State */}
         {sessions.length === 0 && (
-          <div className="text-center py-20 rounded-[2rem] border"
+          <div className="text-center py-12 md:py-20 px-4 rounded-2xl md:rounded-[2rem] border"
             style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
-            <span className="material-symbols-outlined text-6xl block mb-4" style={{ color: 'var(--color-primary-container)' }}>
+            <span className="material-symbols-outlined text-5xl md:text-6xl block mb-3 md:mb-4" style={{ color: 'var(--color-primary-container)' }}>
               auto_stories
             </span>
-            <h2 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Jurnal Masih Kosong</h2>
-            <p className="text-sm mb-8 max-w-xs mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <h2 className="text-lg md:text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Jurnal Masih Kosong</h2>
+            <p className="text-xs md:text-sm mb-6 md:mb-8 max-w-xs mx-auto" style={{ color: 'var(--color-text-muted)' }}>
               Selesaikan sesi belajar pertamamu untuk mulai membangun jurnal pembelajaran.
             </p>
             <button onClick={() => router.push('/')}
-              className="px-8 py-3.5 rounded-full font-semibold text-white squishy-btn shadow-lifted"
+              className="w-full sm:w-auto px-6 py-3 md:px-8 md:py-3.5 rounded-full font-semibold text-white squishy-btn shadow-lifted text-sm md:text-base"
               style={{ background: 'var(--color-primary)', boxShadow: '0 8px 24px rgba(76,100,85,0.25)' }}>
               Mulai Belajar Sekarang
             </button>
@@ -148,13 +148,13 @@ export default function HistoryPage() {
         )}
 
         {/* Session list */}
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {sessions.map((s, i) => {
             const isPass = s.status === 'lulus'
             const scoreIcon = s.score >= 80 ? '🌟' : s.score >= 60 ? '⭐' : '🌱'
             return (
               <div key={s.id}
-                className="bento-card rounded-[2rem] p-6 flex items-center gap-5 border anim-fade-up"
+                className="bento-card rounded-2xl md:rounded-[2rem] p-4 md:p-6 flex flex-row items-center gap-3 md:gap-5 border anim-fade-up"
                 style={{
                   background: 'var(--color-surface-container-lowest)',
                   borderColor: 'var(--color-border)',
@@ -162,24 +162,24 @@ export default function HistoryPage() {
                 }}>
 
                 {/* Score circle */}
-                <div className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0"
-                  style={{ background: isPass ? 'var(--color-primary-fixed)' : 'var(--color-amber-bg)' }}>
-                  <span className="text-xl">{scoreIcon}</span>
-                  <span className="text-xs font-bold" style={{ color: isPass ? 'var(--color-primary)' : 'var(--color-amber)' }}>{s.score}%</span>
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex flex-col items-center justify-center shrink-0"
+                   style={{ background: isPass ? 'var(--color-primary-fixed)' : 'var(--color-amber-bg)' }}>
+                  <span className="text-lg md:text-xl">{scoreIcon}</span>
+                  <span className="text-[10px] md:text-xs font-bold" style={{ color: isPass ? 'var(--color-primary)' : 'var(--color-amber)' }}>{s.score}%</span>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-base truncate mb-1" style={{ color: 'var(--color-text)' }}>{s.topic}</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>{formatDate(s.date)}</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>·</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{s.totalSteps} langkah</span>
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border`}
+                  <p className="font-semibold text-sm md:text-base truncate mb-1" style={{ color: 'var(--color-text)' }}>{s.topic}</p>
+                  <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                    <span className="text-[10px] md:text-xs" style={{ color: 'var(--color-text-subtle)' }}>{formatDate(s.date)}</span>
+                    <span className="text-[10px] md:text-xs" style={{ color: 'var(--color-text-subtle)' }}>·</span>
+                    <span className="text-[10px] md:text-xs" style={{ color: 'var(--color-text-muted)' }}>{s.totalSteps} langkah</span>
+                    <span className={`text-[9px] md:text-xs font-semibold px-2 md:px-2.5 py-0.5 rounded-full border`}
                       style={isPass
                         ? { background: 'var(--color-primary-fixed)', color: 'var(--color-primary)', borderColor: 'transparent' }
                         : { background: 'var(--color-amber-bg)', color: 'var(--color-amber)', borderColor: 'transparent' }}>
-                      {isPass ? 'Lulus' : 'Perlu Review'}
+                      {isPass ? 'Lulus' : 'Review'}
                     </span>
                   </div>
                 </div>
@@ -187,10 +187,10 @@ export default function HistoryPage() {
                 {/* Delete button */}
                 <button
                   onClick={() => handleDelete(s.id)}
-                  className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                  className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all"
                   style={{ background: 'var(--color-surface-container)', color: 'var(--color-text-subtle)' }}
                   title="Hapus sesi ini">
-                  <span className="material-symbols-outlined text-xl">delete</span>
+                  <span className="material-symbols-outlined text-lg md:text-xl">delete</span>
                 </button>
               </div>
             )
@@ -199,11 +199,11 @@ export default function HistoryPage() {
 
         {/* CTA */}
         {sessions.length > 0 && (
-          <div className="mt-10 flex justify-center">
+          <div className="mt-8 md:mt-10 flex justify-center px-4">
             <button onClick={() => router.push('/')}
-              className="flex items-center gap-2.5 px-10 py-4 rounded-full font-bold text-white shadow-lifted squishy-btn transition-all hover:scale-105"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-2.5 px-8 md:px-10 py-3.5 md:py-4 rounded-full font-bold text-white shadow-lifted squishy-btn transition-all hover:scale-105 text-sm md:text-base"
               style={{ background: 'var(--color-primary)', boxShadow: '0 8px 24px rgba(76,100,85,0.25)' }}>
-              <span className="material-symbols-outlined filled">auto_awesome</span>
+              <span className="material-symbols-outlined text-lg md:text-xl filled">auto_awesome</span>
               Input Materi Baru
             </button>
           </div>

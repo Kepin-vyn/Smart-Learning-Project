@@ -14,6 +14,8 @@ export function getSessions(): SessionRecord[] {
 export function saveSession(session: SessionRecord): void {
   if (typeof window === 'undefined') return
   const existing = getSessions()
+  // Guard: skip if a session with the same id already exists (prevents double-save)
+  if (existing.some(s => s.id === session.id)) return
   // Prepend new session so newest is first
   localStorage.setItem(SESSIONS_KEY, JSON.stringify([session, ...existing]))
 }

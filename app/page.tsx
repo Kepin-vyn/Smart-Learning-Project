@@ -90,7 +90,7 @@ function DropZone({
       onDragOver={onDragOver}
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
-      className="rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 min-h-44 select-none"
+      className="rounded-xl p-6 md:p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 min-h-36 md:min-h-44 select-none text-center"
       style={{
         border: `2px dashed ${dragging ? 'var(--color-primary)' : 'var(--color-border)'}`,
         background: dragging ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
@@ -249,11 +249,11 @@ export default function HomePage() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b"
         style={{ background: 'rgba(251,249,244,0.85)', backdropFilter: 'blur(12px)', borderColor: 'var(--color-border)' }}>
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined filled text-2xl" style={{ color: 'var(--color-primary-container)' }}>menu_book</span>
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
-              Smart Step Learning Assistant
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined filled text-xl md:text-2xl" style={{ color: 'var(--color-primary-container)' }}>menu_book</span>
+            <span className="text-base md:text-lg font-bold tracking-tight" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
+              Smart Step <span className="hidden sm:inline">Learning Assistant</span>
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-8 h-full">
@@ -282,29 +282,31 @@ export default function HomePage() {
           </div>
 
           {/* Card */}
-          <div className="rounded-[2rem] p-2 mb-10 border shadow-card"
+          <div className="rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-3 mb-8 md:mb-10 border shadow-card"
             style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
 
             {/* Tab bar */}
-            <div className="flex flex-col md:flex-row gap-2 mb-2">
+            <div className="flex flex-row gap-1 p-1 rounded-xl md:rounded-2xl mb-3"
+              style={{ background: 'var(--color-surface-container-low)' }}>
               {([
-                { id: 'text' as Tab, icon: 'edit_note', label: 'Tulis Teks' },
-                { id: 'pdf' as Tab,  icon: 'picture_as_pdf', label: 'Upload PDF' },
-                { id: 'image' as Tab,icon: 'image', label: 'Upload Gambar' },
-              ] as const).map(({ id, icon, label }) => (
+                { id: 'text' as Tab, icon: 'edit_note', label: 'Tulis Teks', short: 'Teks' },
+                { id: 'pdf' as Tab,  icon: 'picture_as_pdf', label: 'Upload PDF', short: 'PDF' },
+                { id: 'image' as Tab,icon: 'image', label: 'Upload Gambar', short: 'Gambar' },
+              ] as const).map(({ id, icon, label, short }) => (
                 <button
                   key={id}
                   id={`tab-${id}`}
                   onClick={() => switchTab(id)}
                   role="tab"
                   aria-selected={activeTab === id}
-                  className="flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200"
+                  className="flex-1 flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3.5 px-2 md:px-4 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 whitespace-nowrap"
                   style={activeTab === id
-                    ? { background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }
-                    : { color: 'var(--color-text-muted)', background: 'transparent' }}
+                    ? { background: 'var(--color-surface-container-lowest)', color: 'var(--color-primary)', boxShadow: '0 2px 8px rgba(76,100,85,0.08)' }
+                    : { color: 'var(--color-text-subtle)', background: 'transparent' }}
                 >
-                  <span className="material-symbols-outlined text-xl">{icon}</span>
-                  {label}
+                  <span className="material-symbols-outlined text-lg md:text-xl">{icon}</span>
+                  <span className="hidden sm:inline">{label}</span>
+                  <span className="sm:hidden">{short}</span>
                 </button>
               ))}
             </div>
@@ -316,14 +318,14 @@ export default function HomePage() {
 
             {/* Text tab */}
             {activeTab === 'text' && (
-              <div className="px-2 pb-2 anim-fade-up">
+              <div className="px-1 md:px-2 pb-2 anim-fade-up">
                 <textarea
                   id="text-input"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Tulis atau tempel materi di sini..."
                   rows={10}
-                  className="w-full rounded-[1.5rem] px-6 py-5 text-base leading-relaxed resize-none transition-all"
+                  className="w-full rounded-xl md:rounded-[1.5rem] px-4 md:px-6 py-4 md:py-5 text-sm md:text-base leading-relaxed resize-none transition-all"
                   style={{
                     background: 'var(--color-surface-container-low)',
                     border: '2px solid transparent',
@@ -455,13 +457,13 @@ export default function HomePage() {
           </div>
 
           {/* Process button */}
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center mb-8 md:mb-10 px-4">
             <button
               id="btn-process"
               onClick={handleProcess}
               disabled={!canProcess}
               aria-busy={isProcessing}
-              className="group flex items-center gap-4 px-12 py-5 rounded-full font-bold text-lg squishy-btn transition-all duration-300"
+              className="group w-full sm:w-auto flex items-center justify-center gap-3 md:gap-4 px-8 md:px-12 py-4 md:py-5 rounded-full font-bold text-base md:text-lg squishy-btn transition-all duration-300"
               style={canProcess
                 ? {
                     background: 'var(--color-primary-fixed)',
@@ -476,7 +478,7 @@ export default function HomePage() {
                   }}
             >
               {isProcessing ? (
-                <><Spinner size={22} /><span>AI sedang menyusun langkah belajar…</span></>
+                <><Spinner size={20} /><span>AI sedang menyusun langkah belajar…</span></>
               ) : (
                 <>
                   <span className="material-symbols-outlined filled transition-transform group-hover:rotate-12">auto_awesome</span>

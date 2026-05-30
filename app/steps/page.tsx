@@ -130,20 +130,20 @@ export default function StepsPage() {
 
         {/* Main glass card */}
         <div key={step.id}
-          className="w-full max-w-2xl glass-card rounded-[2rem] p-8 md:p-10 shadow-lifted mb-8 flex flex-col items-center text-center anim-fade-up">
+          className="w-full max-w-2xl glass-card rounded-2xl md:rounded-[2rem] p-6 md:p-10 shadow-lifted mb-6 md:mb-8 flex flex-col items-center text-center anim-fade-up">
 
           {/* Step icon */}
-          <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6"
+          <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6"
             style={{ background: 'var(--color-primary-fixed)' }}>
-            <span className="material-symbols-outlined text-4xl filled" style={{ color: 'var(--color-primary)' }}>menu_book</span>
+            <span className="material-symbols-outlined text-3xl md:text-4xl filled" style={{ color: 'var(--color-primary)' }}>menu_book</span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-5 leading-tight"
+          <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-5 leading-tight"
             style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-on-primary-container)' }}>
             {step.title}
           </h1>
 
-          <p className="text-lg leading-relaxed mb-8 max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-base md:text-lg leading-relaxed mb-6 md:mb-8 max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
             {step.content}
           </p>
 
@@ -151,13 +151,13 @@ export default function StepsPage() {
           {isTtsSupported ? (
             <button
               onClick={() => handleTTS(`${step.title}. ${step.content}`)}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all squishy-btn"
+              className="flex items-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl font-semibold text-xs md:text-sm transition-all squishy-btn"
               style={isPlaying
                 ? { background: 'var(--color-on-primary-container)', color: 'var(--color-on-secondary)', boxShadow: '0 8px 20px rgba(76,100,85,0.2)' }
                 : { background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}
               aria-label={isPlaying ? 'Hentikan suara' : 'Dengarkan panduan'}
             >
-              <span className="material-symbols-outlined">{isPlaying ? 'stop_circle' : 'volume_up'}</span>
+              <span className="material-symbols-outlined text-lg md:text-xl">{isPlaying ? 'stop_circle' : 'volume_up'}</span>
               {isPlaying ? 'HENTIKAN SUARA' : 'DENGARKAN PANDUAN'}
             </button>
           ) : (
@@ -168,18 +168,18 @@ export default function StepsPage() {
         </div>
 
         {/* Navigation */}
-        <div className="w-full max-w-2xl flex items-center gap-4">
+        <div className="w-full max-w-2xl flex items-center gap-3 md:gap-4">
           <button
             onClick={() => navigateStep(currentStepIndex - 1)}
             disabled={isFirstStep}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold transition-all squishy-btn border-2"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl font-semibold transition-all squishy-btn border-2 text-sm md:text-base"
             style={{
               background: isFirstStep ? 'transparent' : 'var(--color-surface-container-high)',
               color: isFirstStep ? 'transparent' : 'var(--color-text-muted)',
               borderColor: isFirstStep ? 'transparent' : 'var(--color-outline-variant)',
               pointerEvents: isFirstStep ? 'none' : 'auto',
             }}>
-            <span className="material-symbols-outlined">arrow_back</span> Kembali
+            <span className="material-symbols-outlined text-lg md:text-xl">arrow_back</span> Kembali
           </button>
 
           <button
@@ -191,13 +191,13 @@ export default function StepsPage() {
                 navigateStep(currentStepIndex + 1)
               }
             }}
-            className="flex-[1.5] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-white transition-all squishy-btn shadow-lifted"
+            className="flex-[1.5] flex items-center justify-center gap-1.5 md:gap-2 px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all squishy-btn shadow-lifted text-sm md:text-base"
             style={{
               background: isLastStep ? 'var(--color-primary)' : 'var(--color-primary)',
               boxShadow: '0 8px 24px rgba(76,100,85,0.25)',
             }}>
             {isLastStep ? 'Mulai Kuis' : 'Selanjutnya'}
-            <span className="material-symbols-outlined">arrow_forward</span>
+            <span className="material-symbols-outlined text-lg md:text-xl">arrow_forward</span>
           </button>
         </div>
       </main>

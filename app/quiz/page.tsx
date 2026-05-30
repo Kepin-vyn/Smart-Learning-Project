@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { saveSession } from '@/lib/sessions'
 import type { SessionRecord } from '@/lib/types'
 
@@ -68,8 +68,16 @@ export default function QuizPage() {
     }
   }, [quizResult, currentQuestionIndex])
 
+  const savedRef = useRef(false) // ← one-shot flag: only save once per quiz
+
   useEffect(() => {
-    if (quizResult?.questions && currentQuestionIndex >= quizResult.questions.length && quizResult.questions.length > 0) {
+    if (
+      quizResult?.questions &&
+      currentQuestionIndex >= quizResult.questions.length &&
+      quizResult.questions.length > 0 &&
+      !savedRef.current // ← skip if already saved
+    ) {
+      savedRef.current = true // ← mark as saved immediately to prevent re-entry
       const score = Math.round((correctAnswers / quizResult.questions.length) * 100)
       setLatestScore(score)
       const newDifficulty = score < 60 ? 'easy' : score >= 80 ? 'hard' : 'normal'
@@ -205,20 +213,20 @@ export default function QuizPage() {
         </div>
 
         {/* Quiz card */}
-        <section className="rounded-[2.5rem] p-8 md:p-12 shadow-lifted mb-6 border anim-fade-up"
+        <section className="rounded-2xl md:rounded-[2.5rem] p-5 md:p-12 shadow-lifted mb-6 border anim-fade-up"
           style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-surface-container-high)' }}>
 
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 flex items-center justify-center rounded-2xl" style={{ background: 'var(--color-primary-fixed)' }}>
-              <span className="material-symbols-outlined text-3xl" style={{ color: 'var(--color-primary)' }}>psychology</span>
+          <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+            <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl shrink-0" style={{ background: 'var(--color-primary-fixed)' }}>
+              <span className="material-symbols-outlined text-2xl md:text-3xl" style={{ color: 'var(--color-primary)' }}>psychology</span>
             </div>
-            <h2 className="text-xl font-bold leading-snug flex-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+            <h2 className="text-lg md:text-xl font-bold leading-snug flex-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
               {question.question}
             </h2>
           </div>
 
           {/* Options grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
             {shuffledOptions.map((opt, idx) => {
               const labels = ['A', 'B', 'C', 'D']
               const isCorrect = isRevealed && opt.originalIndex === question.correctIndex
@@ -229,7 +237,7 @@ export default function QuizPage() {
                   key={idx}
                   onClick={() => handleOptionClick(opt.originalIndex)}
                   disabled={isRevealed}
-                  className={`group flex flex-col items-start text-left p-5 rounded-[1.5rem] transition-all border-2 ${
+                  className={`group flex flex-col items-start text-left p-4 md:p-5 rounded-xl md:rounded-[1.5rem] transition-all border-2 ${
                     isCorrect ? 'anim-pulse-green' : ''
                   }`}
                   style={isCorrect
@@ -239,20 +247,20 @@ export default function QuizPage() {
                     : { background: 'var(--color-surface-container-low)', borderColor: 'transparent', color: 'var(--color-text)' }}
                 >
                   <div className="flex items-center justify-between w-full mb-2">
-                    <span className="font-bold text-sm" style={{ color: isCorrect ? 'var(--color-primary-container)' : isWrong ? '#8a6000' : 'var(--color-text-subtle)' }}>
+                    <span className="font-bold text-xs md:text-sm" style={{ color: isCorrect ? 'var(--color-primary-container)' : isWrong ? '#8a6000' : 'var(--color-text-subtle)' }}>
                       Opsi {labels[idx]}
                     </span>
                     {isCorrect && (
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: 'var(--color-primary)', color: '#fff' }}>
-                        <span className="material-symbols-outlined text-sm filled">check</span>
+                      <div className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full" style={{ background: 'var(--color-primary)', color: '#fff' }}>
+                        <span className="material-symbols-outlined text-xs md:text-sm filled">check</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-base leading-relaxed">{opt.text}</p>
+                  <p className="text-sm md:text-base leading-relaxed">{opt.text}</p>
                   {isCorrect && (
-                    <div className="mt-3 flex items-center gap-1.5" style={{ color: 'var(--color-primary)' }}>
-                      <span className="material-symbols-outlined text-base">verified</span>
-                      <span className="text-sm font-semibold">Bagus sekali! Kamu benar 🌿</span>
+                    <div className="mt-3 flex items-center gap-1 md:gap-1.5" style={{ color: 'var(--color-primary)' }}>
+                      <span className="material-symbols-outlined text-sm md:text-base">verified</span>
+                      <span className="text-xs md:text-sm font-semibold">Bagus sekali! Kamu benar 🌿</span>
                     </div>
                   )}
                 </button>
@@ -262,14 +270,14 @@ export default function QuizPage() {
 
           {/* Feedback */}
           {feedback.message && (
-            <div className="mt-6 p-4 rounded-2xl flex items-start gap-3 anim-fade-up border"
+            <div className="mt-6 p-4 rounded-xl md:rounded-2xl flex items-start gap-2.5 md:gap-3 anim-fade-up border"
               style={feedback.type === 'success'
                 ? { background: 'var(--color-green-bg)', borderColor: 'var(--color-green-border)', color: 'var(--color-green)' }
                 : { background: 'var(--color-amber-bg)', borderColor: 'var(--color-amber-border)', color: 'var(--color-amber)' }}>
-              <span className="text-xl mt-0.5">{feedback.type === 'success' ? '✨' : '💡'}</span>
+              <span className="text-lg md:text-xl mt-0.5">{feedback.type === 'success' ? '✨' : '💡'}</span>
               <div>
-                <p className="font-semibold">{feedback.message}</p>
-                {showExplanation && <p className="mt-1.5 text-sm leading-relaxed opacity-90">{question.explanation}</p>}
+                <p className="font-semibold text-sm md:text-base">{feedback.message}</p>
+                {showExplanation && <p className="mt-1.5 text-xs md:text-sm leading-relaxed opacity-90">{question.explanation}</p>}
               </div>
             </div>
           )}
@@ -277,13 +285,13 @@ export default function QuizPage() {
 
         {/* Next button */}
         {showExplanation && (
-          <div className="flex justify-center anim-fade-up">
+          <div className="flex justify-center anim-fade-up px-4">
             <button
               onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-              className="flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg text-white shadow-lifted squishy-btn transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 px-8 md:px-12 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-lg text-white shadow-lifted squishy-btn transition-all"
               style={{ background: 'var(--color-primary)', boxShadow: '0 8px 24px rgba(76,100,85,0.3)' }}>
               <span>{currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan' : 'Lanjutkan Pertanyaan'}</span>
-              <span className="material-symbols-outlined">arrow_forward</span>
+              <span className="material-symbols-outlined text-lg md:text-xl">arrow_forward</span>
             </button>
           </div>
         )}
