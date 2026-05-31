@@ -3,10 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
 import { useEffect, useState } from 'react'
+import { translations } from '@/lib/i18n'
+import LangToggle from '@/components/LangToggle'
 
 export default function StepsPage() {
   const router = useRouter()
-  const { result, currentStepIndex, setCurrentStep } = useLearningStore()
+  const { result, currentStepIndex, setCurrentStep, lang } = useLearningStore()
+  const t = translations[lang]
   
   const [mounted, setMounted] = useState(false)
   const [isTtsSupported, setIsTtsSupported] = useState(true)
@@ -60,14 +63,14 @@ export default function StepsPage() {
         <div className="text-center p-12 rounded-[2rem] max-w-md w-full shadow-card"
           style={{ background: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-border)' }}>
           <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--color-primary-container)' }}>inbox</span>
-          <h1 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Belum Ada Materi</h1>
+          <h1 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>{t.steps_no_material_title}</h1>
           <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Kamu belum memasukkan materi apapun. Silakan kembali ke beranda untuk memproses materi baru.
+            {t.steps_no_material_desc}
           </p>
           <button onClick={() => router.push('/')}
             className="px-6 py-3 rounded-full font-semibold text-sm transition-all squishy-btn"
             style={{ background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}>
-            ← Kembali ke Beranda
+            {t.steps_back_home}
           </button>
         </div>
       </main>
@@ -110,15 +113,18 @@ export default function StepsPage() {
               className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
               style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container)' }}>
               <span className="material-symbols-outlined text-base">close</span>
-              KELUAR
+              {t.steps_exit}
             </button>
           </div>
 
           <div className="flex justify-between items-end mb-3">
             <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
-              Langkah {currentStepIndex + 1} dari {result.steps.length}
+              {t.steps_progress_label(currentStepIndex + 1, result.steps.length)}
             </h2>
-            <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>{Math.round(progress)}% Selesai</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>{t.steps_progress_pct(Math.round(progress))}</span>
+              <LangToggle />
+            </div>
           </div>
 
           <div className="w-full h-3 rounded-full overflow-hidden"
@@ -155,14 +161,14 @@ export default function StepsPage() {
               style={isPlaying
                 ? { background: 'var(--color-on-primary-container)', color: 'var(--color-on-secondary)', boxShadow: '0 8px 20px rgba(76,100,85,0.2)' }
                 : { background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}
-              aria-label={isPlaying ? 'Hentikan suara' : 'Dengarkan panduan'}
+              aria-label={isPlaying ? t.steps_tts_stop : t.steps_tts_play}
             >
               <span className="material-symbols-outlined text-lg md:text-xl">{isPlaying ? 'stop_circle' : 'volume_up'}</span>
-              {isPlaying ? 'HENTIKAN SUARA' : 'DENGARKAN PANDUAN'}
+              {isPlaying ? t.steps_tts_stop : t.steps_tts_play}
             </button>
           ) : (
             <span className="text-xs px-3 py-1.5 rounded-lg" style={{ color: 'var(--color-text-subtle)', background: 'var(--color-surface-container)' }}>
-              TTS tidak didukung browser ini
+              {t.steps_tts_unsupported}
             </span>
           )}
         </div>
@@ -179,7 +185,7 @@ export default function StepsPage() {
               borderColor: isFirstStep ? 'transparent' : 'var(--color-outline-variant)',
               pointerEvents: isFirstStep ? 'none' : 'auto',
             }}>
-            <span className="material-symbols-outlined text-lg md:text-xl">arrow_back</span> Kembali
+            <span className="material-symbols-outlined text-lg md:text-xl">arrow_back</span> {t.steps_btn_back}
           </button>
 
           <button
@@ -196,7 +202,7 @@ export default function StepsPage() {
               background: isLastStep ? 'var(--color-primary)' : 'var(--color-primary)',
               boxShadow: '0 8px 24px rgba(76,100,85,0.25)',
             }}>
-            {isLastStep ? 'Mulai Kuis' : 'Selanjutnya'}
+            {isLastStep ? t.steps_btn_quiz : t.steps_btn_next}
             <span className="material-symbols-outlined text-lg md:text-xl">arrow_forward</span>
           </button>
         </div>
@@ -205,7 +211,7 @@ export default function StepsPage() {
       {/* Footer */}
       <footer className="w-full py-6 border-t text-center" style={{ borderColor: 'var(--color-border)' }}>
         <p className="text-xs" style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>
-          © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+          © 2024 Smart Step Learning Assistant • {t.footer_tagline}
         </p>
       </footer>
     </div>

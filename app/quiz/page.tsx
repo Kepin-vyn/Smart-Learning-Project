@@ -5,13 +5,15 @@ import { useLearningStore } from '@/lib/store'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { saveSession } from '@/lib/sessions'
 import type { SessionRecord } from '@/lib/types'
+import { translations } from '@/lib/i18n'
 
 interface ShuffledOption { text: string; originalIndex: number }
 interface MissedQuestion { question: string; correctAnswer: string; explanation: string }
 
 export default function QuizPage() {
   const router = useRouter()
-  const { result, quizResult, setQuizResult, difficulty, setDifficulty, setLatestScore } = useLearningStore()
+  const { result, quizResult, setQuizResult, difficulty, setDifficulty, setLatestScore, lang } = useLearningStore()
+  const t = translations[lang]
   
   const [mounted, setMounted] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -103,10 +105,10 @@ export default function QuizPage() {
         <div className="text-center p-12 rounded-[2rem] max-w-md w-full shadow-card"
           style={{ background: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-border)' }}>
           <span className="material-symbols-outlined text-5xl block mb-4" style={{ color: 'var(--color-primary-container)' }}>inbox</span>
-          <h1 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Belum Ada Materi</h1>
+          <h1 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>{t.quiz_no_material_title}</h1>
           <button onClick={() => router.push('/')} className="px-6 py-3 rounded-full font-semibold text-sm squishy-btn"
             style={{ background: 'var(--color-primary-fixed)', color: 'var(--color-on-primary-container)' }}>
-            ← Kembali ke Beranda
+            {t.quiz_back_home}
           </button>
         </div>
       </main>
@@ -125,16 +127,16 @@ export default function QuizPage() {
           </div>
         </div>
         <h2 className="text-xl font-semibold mb-3 text-center" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-muted)' }}>
-          Menyiapkan kuis khusus untukmu...
+          {t.quiz_loading_title}
         </h2>
         <p className="text-sm text-center max-w-xs mb-8" style={{ color: 'var(--color-text-subtle)' }}>
-          Kami sedang merangkai pertanyaan yang sesuai dengan perkembangan belajarmu.
+          {t.quiz_loading_desc}
         </p>
         <div className="w-56 h-1 rounded-full overflow-hidden relative" style={{ background: 'var(--color-surface-container-high)' }}>
           <div className="h-full w-2/3 rounded-full shimmer-bar relative" style={{ background: 'var(--color-primary-container)', opacity: 0.8 }} />
         </div>
         <p className="text-xs mt-8 uppercase tracking-widest opacity-40" style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-outline)' }}>
-          Tenang, semua akan baik-baik saja.
+          {t.quiz_loading_calm}
         </p>
       </main>
     )
@@ -149,7 +151,7 @@ export default function QuizPage() {
         <div className="anim-pulse-gentle mb-4">
           <span className="material-symbols-outlined text-6xl" style={{ color: 'var(--color-primary-container)' }}>hourglass_top</span>
         </div>
-        <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-muted)' }}>Menyiapkan ringkasan sesimu...</h2>
+        <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-muted)' }}>{t.quiz_saving}</h2>
       </main>
     )
   }
@@ -157,7 +159,7 @@ export default function QuizPage() {
   const handleOptionClick = (originalIndex: number) => {
     if (isRevealed || showExplanation) return
     if (originalIndex === question.correctIndex) {
-      setFeedback({ type: 'success', message: 'Luar biasa! Jawabanmu tepat. 🌿' })
+      setFeedback({ type: 'success', message: t.quiz_feedback_correct })
       setIsRevealed(true)
       setShowExplanation(true)
       if (retryCount === 0) setCorrectAnswers(prev => prev + 1)
@@ -165,7 +167,7 @@ export default function QuizPage() {
       const newRetry = retryCount + 1
       setRetryCount(newRetry)
       if (newRetry >= 2) {
-        setFeedback({ type: 'warning', message: 'Mari kita pelajari bersama jawaban yang paling tepat.' })
+        setFeedback({ type: 'warning', message: t.quiz_feedback_review })
         setIsRevealed(true)
         setShowExplanation(true)
         setMissedQuestions(prev => [...prev, {
@@ -174,7 +176,7 @@ export default function QuizPage() {
           explanation: question.explanation
         }])
       } else {
-        setFeedback({ type: 'warning', message: `Hampir! Coba lagi. Petunjuk: ${question.hint}` })
+        setFeedback({ type: 'warning', message: t.quiz_feedback_hint(question.hint) })
       }
     }
   }
@@ -202,7 +204,7 @@ export default function QuizPage() {
         <div className="mb-6 w-full">
           <div className="flex justify-between items-end mb-2">
             <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--color-primary)' }}>
-              Pertanyaan {currentQuestionIndex + 1} dari {quizResult.questions.length}
+              {t.quiz_question_label(currentQuestionIndex + 1, quizResult.questions.length)}
             </span>
             <span className="text-sm" style={{ color: 'var(--color-text-subtle)' }}>{Math.round(progress)}%</span>
           </div>
@@ -248,7 +250,7 @@ export default function QuizPage() {
                 >
                   <div className="flex items-center justify-between w-full mb-2">
                     <span className="font-bold text-xs md:text-sm" style={{ color: isCorrect ? 'var(--color-primary-container)' : isWrong ? '#8a6000' : 'var(--color-text-subtle)' }}>
-                      Opsi {labels[idx]}
+                      {t.quiz_option_label(['A','B','C','D'][idx])}
                     </span>
                     {isCorrect && (
                       <div className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full" style={{ background: 'var(--color-primary)', color: '#fff' }}>
@@ -260,7 +262,7 @@ export default function QuizPage() {
                   {isCorrect && (
                     <div className="mt-3 flex items-center gap-1 md:gap-1.5" style={{ color: 'var(--color-primary)' }}>
                       <span className="material-symbols-outlined text-sm md:text-base">verified</span>
-                      <span className="text-xs md:text-sm font-semibold">Bagus sekali! Kamu benar 🌿</span>
+                      <span className="text-xs md:text-sm font-semibold">{t.quiz_correct_inline}</span>
                     </div>
                   )}
                 </button>
@@ -290,7 +292,7 @@ export default function QuizPage() {
               onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 px-8 md:px-12 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-lg text-white shadow-lifted squishy-btn transition-all"
               style={{ background: 'var(--color-primary)', boxShadow: '0 8px 24px rgba(76,100,85,0.3)' }}>
-              <span>{currentQuestionIndex === quizResult.questions.length - 1 ? 'Lihat Ringkasan' : 'Lanjutkan Pertanyaan'}</span>
+              <span>{currentQuestionIndex === quizResult.questions.length - 1 ? t.quiz_btn_finish : t.quiz_btn_next}</span>
               <span className="material-symbols-outlined text-lg md:text-xl">arrow_forward</span>
             </button>
           </div>
@@ -299,7 +301,7 @@ export default function QuizPage() {
         {/* Footer */}
         <footer className="text-center mt-10">
           <p className="text-xs" style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>
-            © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+            © 2024 Smart Step Learning Assistant • {t.footer_tagline}
           </p>
         </footer>
       </main>

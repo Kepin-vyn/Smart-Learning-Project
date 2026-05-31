@@ -4,9 +4,11 @@ import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
 import { motion } from 'framer-motion'
+import { translations } from '@/lib/i18n'
 
 export default function PomodoroTimer() {
   const {
+    lang,
     pomodoroMode,
     pomodoroEndTime,
     isPomodoroRunning,
@@ -16,6 +18,8 @@ export default function PomodoroTimer() {
     stopPomodoro,
     updatePomodoroDurations
   } = useLearningStore()
+
+  const t = translations[lang]
 
   const pathname = usePathname()
   const [timeLeftStr, setTimeLeftStr] = useState<string>('25:00')
@@ -92,10 +96,10 @@ export default function PomodoroTimer() {
         </div>
         <h2 className="text-3xl font-bold mb-2 text-center"
           style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
-          Waktunya Istirahat Sejenak
+          {t.pomo_break_title}
         </h2>
         <p className="text-lg mb-8 text-center max-w-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Regangkan tubuhmu dan minum air putih — kamu sudah bekerja keras! 🌿
+          {t.pomo_break_desc}
         </p>
         <div className="text-5xl font-bold tabular-nums mb-10 px-10 py-5 rounded-[2rem] shadow-soft border-2"
           style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-on-primary-container)', background: 'white', borderColor: 'var(--color-primary-fixed)' }}>
@@ -104,7 +108,7 @@ export default function PomodoroTimer() {
         <button onClick={stopPomodoro}
           className="px-8 py-3.5 rounded-full font-semibold border-2 transition-colors squishy-btn"
           style={{ borderColor: 'var(--color-primary-container)', color: 'var(--color-primary)', background: 'white' }}>
-          Lewati Istirahat
+          {t.pomo_skip_break}
         </button>
       </div>
     )
@@ -133,7 +137,7 @@ export default function PomodoroTimer() {
             backdropFilter: 'blur(12px)',
             borderColor: isPomodoroRunning ? 'var(--color-primary)' : 'var(--color-outline-variant)',
           }}
-          title="Klik untuk memperbesar Timer"
+          title={t.pomo_expand_title}
         >
           <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isPomodoroRunning ? 'animate-pulse' : ''}`}
             style={{ background: isPomodoroRunning ? 'var(--color-primary)' : 'var(--color-surface-container)' }}>
@@ -156,11 +160,11 @@ export default function PomodoroTimer() {
               style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-outline-variant)' }}
               onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when setting durations
             >
-              <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-text-subtle)' }}>Atur Timer</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-text-subtle)' }}>{t.pomo_settings_title}</p>
               <div className="flex flex-col gap-3">
                 {[
-                  { label: 'Belajar (menit)', value: localStudy, setter: setLocalStudy },
-                  { label: 'Istirahat (menit)', value: localBreak, setter: setLocalBreak },
+                  { label: t.pomo_study_label, value: localStudy, setter: setLocalStudy },
+                  { label: t.pomo_break_label, value: localBreak, setter: setLocalBreak },
                 ].map(({ label, value, setter }) => (
                   <div key={label} className="flex items-center justify-between gap-4">
                     <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{label}</span>
@@ -174,7 +178,7 @@ export default function PomodoroTimer() {
               <button onClick={handleSaveSettings}
                 className="w-full mt-4 py-2 rounded-xl font-semibold text-sm text-white"
                 style={{ background: 'var(--color-primary)' }}>
-                Simpan Pengaturan
+                {t.pomo_save}
               </button>
             </div>
           )}
@@ -203,7 +207,11 @@ export default function PomodoroTimer() {
             <div>
               <div className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest leading-none mb-1"
                 style={{ color: 'var(--color-outline)' }}>
-                {pomodoroMode === 'idle' ? 'Focus' : pomodoroMode === 'study' ? 'Belajar' : 'Istirahat'}
+                {pomodoroMode === 'idle'
+                  ? t.pomo_mode_idle
+                  : pomodoroMode === 'study'
+                  ? t.pomo_mode_study
+                  : t.pomo_mode_break}
               </div>
               <div className="text-xl md:text-2xl font-bold tabular-nums leading-none"
                 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-on-surface)' }}>
@@ -219,14 +227,14 @@ export default function PomodoroTimer() {
                 <button onClick={() => startPomodoro('study')}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all cursor-pointer"
                   style={{ background: 'var(--color-primary)', color: 'white' }}
-                  title="Mulai Belajar">
+                  title={t.pomo_start_title}>
                   <span className="material-symbols-outlined text-base md:text-lg filled">play_arrow</span>
                 </button>
               ) : (
                 <button onClick={stopPomodoro}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center squishy-btn shadow-soft transition-all cursor-pointer"
                   style={{ background: 'var(--color-amber)', color: 'white' }}
-                  title="Hentikan Timer">
+                  title={t.pomo_stop_title}>
                   <span className="material-symbols-outlined text-base md:text-lg">stop</span>
                 </button>
               )}
@@ -235,13 +243,13 @@ export default function PomodoroTimer() {
                 <button onClick={() => setShowSettings(!showSettings)}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center transition-colors cursor-pointer"
                   style={{ background: 'var(--color-surface-container)', color: 'var(--color-text-subtle)' }}
-                  title="Pengaturan Timer">
+                  title={t.pomo_settings_btn_title}>
                   <span className="material-symbols-outlined text-base md:text-lg">settings</span>
                 </button>
                 <button onClick={() => setIsMinimized(true)}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center transition-colors cursor-pointer"
                   style={{ background: 'var(--color-surface-container)', color: 'var(--color-text-subtle)' }}
-                  title="Kecilkan Widget">
+                  title={t.pomo_minimize_title}>
                   <span className="material-symbols-outlined text-base md:text-lg">close_fullscreen</span>
                 </button>
               </div>

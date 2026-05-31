@@ -1,10 +1,15 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ProcessResult, MicroStep, QuizResult, DifficultyLevel } from './types'
+import type { Lang } from './i18n'
 
 export type PomodoroMode = 'study' | 'break' | 'idle'
 
 interface LearningState {
+  // Bahasa UI
+  lang: Lang
+  setLang: (lang: Lang) => void
+
   // Data materi yang sedang dipelajari
   result: ProcessResult | null
   quizResult: QuizResult | null
@@ -41,6 +46,9 @@ interface LearningState {
 export const useLearningStore = create<LearningState>()(
   persist(
     (set) => ({
+      lang: 'id' as Lang,
+      setLang: (lang: Lang) => set({ lang }),
+
       result: null,
       quizResult: null,
       currentStepIndex: 0,

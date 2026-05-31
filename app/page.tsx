@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLearningStore } from '@/lib/store'
+import { translations } from '@/lib/i18n'
+import LangToggle from '@/components/LangToggle'
 
 type Tab = 'text' | 'pdf' | 'image'
 type NoticeType = 'info' | 'success' | 'warning'
@@ -105,7 +107,8 @@ function DropZone({
 /* ══════════════════════════════════════════════════ */
 export default function HomePage() {
   const router = useRouter()
-  const setResult = useLearningStore((state) => state.setResult)
+  const { setResult, lang } = useLearningStore()
+  const t = translations[lang]
 
   /* state */
   const [activeTab, setActiveTab] = useState<Tab>('text')
@@ -138,14 +141,14 @@ export default function HomePage() {
       const data = await res.json()
       if (data.ok && data.text) {
         setPreviewText(data.text)
-        showNotice('success', 'Teks berhasil dibaca dari PDF. Kamu bisa sunting jika perlu.')
+        showNotice('success', t.notice_pdf_ok)
       } else {
-        showNotice('warning', data.message ?? 'Teks tidak dapat diekstrak. Coba gunakan tab Teks untuk mengetik langsung.')
+        showNotice('warning', data.message ?? t.notice_pdf_fail)
       }
     } catch {
-      showNotice('warning', 'Terjadi kendala saat membaca PDF. Pastikan koneksi internet kamu aktif.')
+      showNotice('warning', t.notice_pdf_error)
     } finally { setIsExtracting(false) }
-  }, [showNotice])
+  }, [showNotice, t])
 
   /* ── Image extraction ────────────────── */
   const doExtractImage = useCallback(async (file: File) => {
@@ -156,14 +159,14 @@ export default function HomePage() {
       const data = await res.json()
       if (data.ok && data.text) {
         setPreviewText(data.text)
-        showNotice('success', 'Teks berhasil dibaca dari gambar. Silakan periksa hasilnya.')
+        showNotice('success', t.notice_img_ok)
       } else {
-        showNotice('warning', data.message ?? 'Teks dalam gambar sulit terbaca. Coba gambar yang lebih jelas.')
+        showNotice('warning', data.message ?? t.notice_img_fail)
       }
     } catch {
-      showNotice('warning', 'Terjadi kendala saat membaca gambar. Pastikan API key sudah diatur.')
+      showNotice('warning', t.notice_img_error)
     } finally { setIsExtracting(false) }
-  }, [showNotice])
+  }, [showNotice, t])
 
   useEffect(() => { if (pdfFile)   doExtractPdf(pdfFile) },   [pdfFile,   doExtractPdf])
   useEffect(() => { if (imageFile) doExtractImage(imageFile) }, [imageFile, doExtractImage])
@@ -182,7 +185,7 @@ export default function HomePage() {
     const file = e.dataTransfer.files?.[0]
     if (!file) return
     if (file.type !== 'application/pdf') {
-      showNotice('warning', 'Mohon unggah file PDF yang valid.'); return
+      showNotice('warning', t.notice_pdf_invalid); return
     }
     setPdfFile(file)
   }
@@ -197,10 +200,10 @@ export default function HomePage() {
   /* ── Image select helper ─────────────── */
   const selectImage = (file: File) => {
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      showNotice('warning', 'Format yang diterima: JPG dan PNG.'); return
+      showNotice('warning', t.notice_img_format); return
     }
     if (file.size > 5 * 1024 * 1024) {
-      showNotice('warning', 'Ukuran file terlalu besar. Gunakan gambar di bawah 5 MB.'); return
+      showNotice('warning', t.notice_img_size); return
     }
     setImageFile(file)
     const reader = new FileReader()
@@ -224,10 +227,10 @@ export default function HomePage() {
         setResult(data)
         router.push('/steps')
       } else {
-        showNotice('warning', data.message ?? 'Materi belum bisa diproses. Coba lagi dalam beberapa saat.')
+        showNotice('warning', data.message ?? t.notice_process_fail)
       }
     } catch {
-      showNotice('warning', 'Koneksi terputus. Pastikan internet kamu aktif, lalu coba lagi.')
+      showNotice('warning', t.notice_connection)
     } finally { setIsProcessing(false) }
   }
 
@@ -256,12 +259,15 @@ export default function HomePage() {
               Smart Step <span className="hidden sm:inline">Learning Assistant</span>
             </span>
           </div>
-          <nav className="hidden md:flex items-center gap-8 h-full">
-            <a href="#" className="text-sm font-semibold border-b-2 pb-0.5"
-              style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary-container)' }}>Beranda</a>
-            <a href="/history" className="text-sm transition-colors hover:text-primary"
-              style={{ color: 'var(--color-text-subtle)' }}>Riwayat Belajar</a>
-          </nav>
+          <div className="hidden md:flex items-center gap-6 h-full">
+            <nav className="flex items-center gap-6 h-full">
+              <a href="#" className="text-sm font-semibold border-b-2 pb-0.5"
+                style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary-container)' }}>{t.nav_home}</a>
+              <a href="/history" className="text-sm transition-colors hover:text-primary"
+                style={{ color: 'var(--color-text-subtle)' }}>{t.nav_history}</a>
+            </nav>
+            <LangToggle />
+          </div>
         </div>
       </header>
 
@@ -273,11 +279,10 @@ export default function HomePage() {
           <div className="mb-10 text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4"
               style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-primary)' }}>
-              Ayo mulai belajar dengan tenang.
+              {t.hero_title}
             </h1>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
-              Masukkan materi yang ingin kamu pelajari hari ini. Kami akan membantumu membaginya
-              menjadi langkah-langkah kecil yang mudah dikuasai.
+              {t.hero_subtitle}
             </p>
           </div>
 
@@ -289,9 +294,9 @@ export default function HomePage() {
             <div className="flex flex-row gap-1 p-1 rounded-xl md:rounded-2xl mb-3"
               style={{ background: 'var(--color-surface-container-low)' }}>
               {([
-                { id: 'text' as Tab, icon: 'edit_note', label: 'Tulis Teks', short: 'Teks' },
-                { id: 'pdf' as Tab,  icon: 'picture_as_pdf', label: 'Upload PDF', short: 'PDF' },
-                { id: 'image' as Tab,icon: 'image', label: 'Upload Gambar', short: 'Gambar' },
+                { id: 'text' as Tab, icon: 'edit_note', label: t.tab_text, short: t.tab_text_short },
+                { id: 'pdf' as Tab,  icon: 'picture_as_pdf', label: t.tab_pdf, short: t.tab_pdf_short },
+                { id: 'image' as Tab,icon: 'image', label: t.tab_image, short: t.tab_image_short },
               ] as const).map(({ id, icon, label, short }) => (
                 <button
                   key={id}
@@ -323,7 +328,7 @@ export default function HomePage() {
                   id="text-input"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Tulis atau tempel materi di sini..."
+                  placeholder={t.text_placeholder}
                   rows={10}
                   className="w-full rounded-xl md:rounded-[1.5rem] px-4 md:px-6 py-4 md:py-5 text-sm md:text-base leading-relaxed resize-none transition-all"
                   style={{
@@ -338,10 +343,10 @@ export default function HomePage() {
                 <div className="flex justify-between items-center px-2 mt-2">
                   <span className="text-sm flex items-center gap-1" style={{ color: 'var(--color-text-subtle)' }}>
                     <span className="material-symbols-outlined text-sm">info</span>
-                    Minimum 50 kata untuk hasil optimal
+                    {t.text_hint}
                   </span>
                   <span className="text-sm tabular-nums" style={{ color: 'var(--color-text-subtle)' }}>
-                    {textInput.length.toLocaleString('id')} karakter
+                    {t.text_char_count(textInput.length)}
                   </span>
                 </div>
               </div>
@@ -358,8 +363,8 @@ export default function HomePage() {
                     onDragEnter={() => setPdfDrag(true)} onDragLeave={() => setPdfDrag(false)} onDrop={handlePdfDrop}>
                     <span className="material-symbols-outlined text-5xl" style={{ color: 'var(--color-primary-container)' }}>picture_as_pdf</span>
                     <div className="text-center">
-                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>Klik atau seret file PDF ke sini</p>
-                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>Hanya PDF berbasis teks · Maks 20 MB</p>
+                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>{t.pdf_drop_title}</p>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>{t.pdf_drop_sub}</p>
                     </div>
                   </DropZone>
                 ) : (
@@ -370,13 +375,13 @@ export default function HomePage() {
                       <p className="font-medium text-sm truncate" style={{ color: 'var(--color-text)' }}>{pdfFile.name}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                         {(pdfFile.size / 1024).toFixed(0)} KB
-                        {isExtracting && <span className="ml-2 anim-pulse">· Membaca teks…</span>}
+                        {isExtracting && <span className="ml-2 anim-pulse">· {t.pdf_reading}</span>}
                       </p>
                     </div>
                     {isExtracting ? <Spinner size={18} /> : (
                       <button onClick={() => { setPdfFile(null); setPreviewText('') }}
                         className="text-sm px-3 py-1.5 rounded-lg transition-colors"
-                        style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container)' }}>Ganti</button>
+                        style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container)' }}>{t.btn_change}</button>
                     )}
                   </div>
                 )}
@@ -385,16 +390,16 @@ export default function HomePage() {
                   <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: '1.5px solid var(--color-border)' }}>
                     <div className="px-4 py-2.5 flex items-center justify-between"
                       style={{ background: 'var(--color-surface-container)', borderBottom: '1px solid var(--color-border)' }}>
-                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Preview Teks</span>
-                      {previewText && <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>{previewText.length.toLocaleString('id')} karakter · bisa diedit</span>}
+                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{t.pdf_preview_label}</span>
+                      {previewText && <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>{t.pdf_editable(previewText.length)}</span>}
                     </div>
                     {isExtracting && !previewText ? (
                       <div className="flex items-center gap-3 p-5" style={{ color: 'var(--color-text-muted)' }}>
-                        <Spinner size={16} /><span className="text-sm">Sedang membaca materi…</span>
+                        <Spinner size={16} /><span className="text-sm">{t.pdf_reading}…</span>
                       </div>
                     ) : (
                       <textarea id="preview-text" value={previewText} onChange={(e) => setPreviewText(e.target.value)}
-                        rows={7} placeholder="Teks dari PDF akan muncul di sini setelah file diunggah…"
+                        rows={7} placeholder={t.pdf_placeholder}
                         className="w-full px-4 py-3 text-sm leading-relaxed resize-none"
                         style={{ color: 'var(--color-text)', background: 'var(--color-surface-container-lowest)', outline: 'none', border: 'none' }} />
                     )}
@@ -414,8 +419,8 @@ export default function HomePage() {
                     onDragEnter={() => setImgDrag(true)} onDragLeave={() => setImgDrag(false)} onDrop={handleImageDrop}>
                     <span className="material-symbols-outlined text-5xl" style={{ color: 'var(--color-primary-container)' }}>image</span>
                     <div className="text-center">
-                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>Klik atau seret gambar ke sini</p>
-                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>Format JPG dan PNG · Maks 5 MB</p>
+                      <p className="font-semibold" style={{ color: 'var(--color-text)' }}>{t.img_drop_title}</p>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>{t.img_drop_sub}</p>
                     </div>
                   </DropZone>
                 ) : (
@@ -427,7 +432,7 @@ export default function HomePage() {
                         {isExtracting && (
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2"
                             style={{ background: 'rgba(76,100,85,0.6)', color: '#fff' }}>
-                            <Spinner size={28} /><span className="text-sm font-medium">Membaca teks dari gambar…</span>
+                            <Spinner size={28} /><span className="text-sm font-medium">{t.img_reading}</span>
                           </div>
                         )}
                       </div>
@@ -437,13 +442,13 @@ export default function HomePage() {
                       {!isExtracting && (
                         <button onClick={() => { setImageFile(null); setImagePreview(''); setPreviewText('') }}
                           className="text-xs px-3 py-1.5 rounded-lg"
-                          style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container-high)' }}>Ganti</button>
+                          style={{ color: 'var(--color-text-muted)', background: 'var(--color-surface-container-high)' }}>{t.btn_change}</button>
                       )}
                     </div>
                     {previewText && (
                       <div className="border-t" style={{ borderColor: 'var(--color-border)' }}>
                         <div className="px-4 py-2" style={{ background: 'var(--color-surface-container)' }}>
-                          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Preview Teks · bisa diedit</span>
+                          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{t.img_preview_label}</span>
                         </div>
                         <textarea value={previewText} onChange={(e) => setPreviewText(e.target.value)}
                           rows={6} className="w-full px-4 py-3 text-sm leading-relaxed resize-none"
@@ -478,11 +483,11 @@ export default function HomePage() {
                   }}
             >
               {isProcessing ? (
-                <><Spinner size={20} /><span>AI sedang menyusun langkah belajar…</span></>
+                <><Spinner size={20} /><span>{t.btn_processing}</span></>
               ) : (
                 <>
                   <span className="material-symbols-outlined filled transition-transform group-hover:rotate-12">auto_awesome</span>
-                  <span>Proses Materi</span>
+                  <span>{t.btn_process}</span>
                 </>
               )}
             </button>
@@ -491,9 +496,9 @@ export default function HomePage() {
           {/* Bento feature cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { icon: 'psychology', color: 'var(--color-tertiary-container)', textColor: 'var(--color-tertiary)', title: 'Analisis Cerdas', desc: 'AI kami akan membedah materi kompleks menjadi poin-poin yang mudah dikuasai.' },
-              { icon: 'rebase_edit', color: 'var(--color-secondary-container)', textColor: 'var(--color-secondary)', title: 'Metode Adaptif', desc: 'Konten disesuaikan dengan ritme belajarmu, tanpa rasa terburu-buru.' },
-              { icon: 'task_alt', color: 'var(--color-primary-fixed)', textColor: 'var(--color-primary)', title: 'Evaluasi Terukur', desc: 'Cek pemahamanmu dengan kuis interaktif di akhir setiap sesi.' },
+              { icon: 'psychology', color: 'var(--color-tertiary-container)', textColor: 'var(--color-tertiary)', title: t.bento_ai_title, desc: t.bento_ai_desc },
+              { icon: 'rebase_edit', color: 'var(--color-secondary-container)', textColor: 'var(--color-secondary)', title: t.bento_adapt_title, desc: t.bento_adapt_desc },
+              { icon: 'task_alt', color: 'var(--color-primary-fixed)', textColor: 'var(--color-primary)', title: t.bento_eval_title, desc: t.bento_eval_desc },
             ].map(({ icon, color, textColor, title, desc }) => (
               <div key={title} className="bento-card p-7 rounded-[2rem] border"
                 style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
@@ -514,13 +519,13 @@ export default function HomePage() {
       <footer className="py-8 border-t text-center"
         style={{ borderColor: 'var(--color-border)' }}>
         <div className="flex justify-center gap-8 mb-3">
-          {['Pusat Bantuan', 'Privasi', 'Panduan Pengguna'].map((l) => (
+          {([t.footer_help, t.footer_privacy, t.footer_guide]).map((l) => (
             <a key={l} href="#" className="text-xs transition-colors hover:text-primary"
               style={{ color: 'var(--color-text-subtle)', fontFamily: 'var(--font-heading)' }}>{l}</a>
           ))}
         </div>
         <p className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>
-          © 2024 Smart Step Learning Assistant • Pendamping Belajar Tenang
+          © 2024 Smart Step Learning Assistant • {t.footer_tagline}
         </p>
       </footer>
 
@@ -529,11 +534,11 @@ export default function HomePage() {
         style={{ background: 'var(--color-surface-container-lowest)', borderColor: 'var(--color-border)' }}>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--color-primary)' }}>
           <span className="material-symbols-outlined filled">home</span>
-          <span className="text-[10px] font-bold">Beranda</span>
+          <span className="text-[10px] font-bold">{t.nav_home}</span>
         </button>
         <button onClick={() => router.push('/history')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--color-text-subtle)' }}>
           <span className="material-symbols-outlined">history</span>
-          <span className="text-[10px] font-medium">Riwayat</span>
+          <span className="text-[10px] font-medium">{t.nav_history_short}</span>
         </button>
       </nav>
 
