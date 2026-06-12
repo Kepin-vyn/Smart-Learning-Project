@@ -141,7 +141,11 @@ export default function HomePage() {
       const data = await res.json()
       if (data.ok && data.text) {
         setPreviewText(data.text)
-        showNotice('success', t.notice_pdf_ok)
+        if (data.warning) {
+          showNotice('warning', data.warning)
+        } else {
+          showNotice('success', t.notice_pdf_ok)
+        }
       } else {
         showNotice('warning', data.message ?? t.notice_pdf_fail)
       }

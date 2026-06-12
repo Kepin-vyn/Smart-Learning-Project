@@ -26,6 +26,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Warn user if text was truncated (> 8000 chars safe limit for Groq free tier)
+    const MAX_CHARS = 8000
+    if (text.length > MAX_CHARS) {
+      const truncated = text.slice(0, MAX_CHARS)
+      return NextResponse.json({
+        ok: true,
+        text: truncated,
+        warning: `PDF berisi ${text.length.toLocaleString()} karakter. Hanya ${MAX_CHARS.toLocaleString()} karakter pertama yang diproses agar sesuai batas AI. Pertimbangkan untuk mengunggah per bagian.`,
+      })
+    }
+
     return NextResponse.json({ ok: true, text })
   } catch (err) {
     console.error('PDF Extraction Error:', err)
